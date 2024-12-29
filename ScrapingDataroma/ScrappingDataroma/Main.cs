@@ -7,7 +7,8 @@ namespace ScrappingDataroma
     public partial class Main : Form
     {
         List<Portafolio> PortafoliosMAN;
-        string FileName = $"PortFoleo.txt"; //$"Dataroma_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
+        string FileName = "PortFoleo.txt"; //$"Dataroma_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
+        string FileNameDataroma = "Dataroma.txt";
         int NumMaximoActivos = 20;
 
         public Main()
@@ -20,7 +21,7 @@ namespace ScrappingDataroma
         {
             string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 
-            // Nombre del archivo HTML con fecha y hora para evitar conflictos            
+            // Nombre del archivo          
             string filePath = Path.Combine(documentsPath, FileName);
 
             try
@@ -42,9 +43,16 @@ namespace ScrappingDataroma
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Error);
             }
+
+            filePath = Path.Combine(documentsPath, FileNameDataroma);
+            if (File.Exists(filePath))
+            {
+                DateTime dt = File.GetLastWriteTimeUtc(filePath);
+                lblLastDownload.Text = dt.ToShortDateString();
+            }
         }
 
-        private async void btnGO_Click(object sender, EventArgs e)
+        private async void btnMAGIC_Click(object sender, EventArgs e)
         {
             listBoxMan.Enabled = true;
             listBoxActivos.Enabled = true;
@@ -53,28 +61,42 @@ namespace ScrappingDataroma
             listBoxMan.Items.Clear();
             listBoxActivos.Items.Clear();
 
-            //string url = "https://www.dataroma.com/m/managers.php"; // "https://www.dataroma.com/m/home.php";
-            //string htmlContent = await FetchHtmlContentAsync(url);
+            string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string filePath = Path.Combine(documentsPath, FileNameDataroma);
 
-            string htmlContent = File.ReadAllText("C:\\Users\\DEEPGAMING\\Documents\\Dataroma_20241218_181504.html");
+            if (File.Exists(filePath))
+            {
+                string htmlContent = File.ReadAllText(filePath);
+
+                if (!string.IsNullOrEmpty(htmlContent))
+                {
+                    // Extraer los datos y formar la lista de Portafolio
+                    PortafoliosMAN = ExtractPortfoliosFromHtml(htmlContent);
+
+                    foreach (var item in PortafoliosMAN)
+                        listBoxMan.Items.Add($"{item.Nombre}");
+                    listBoxMan.SelectedValueChanged += listBoxMan_SelectedValueChanged;
+
+                    listBoxMan.SelectedIndex = 0;
+
+                    SetResult();
+
+                    lblTotal.Text = listBoxMan.Items.Count.ToString();
+                }
+            }
+        }
+
+        private async void btnDownload_Click(object sender, EventArgs e)
+        {
+            string url = "https://www.dataroma.com/m/managers.php"; // "https://www.dataroma.com/m/home.php";
+            string htmlContent = await FetchHtmlContentAsync(url);
 
             if (!string.IsNullOrEmpty(htmlContent))
             {
-                //// Guardar el HTML en un archivo local
-                //string filePath = SaveHtmlToFile(htmlContent);
+                // Guardar el HTML en un archivo local
+                lblSaved.Text = SaveHtmlToFile(htmlContent, FileNameDataroma);
 
-                // Extraer los datos y formar la lista de Portafolio
-                PortafoliosMAN = ExtractPortfoliosFromHtml(htmlContent);
-
-                foreach (var item in PortafoliosMAN)
-                    listBoxMan.Items.Add($"{item.Nombre}");
-                listBoxMan.SelectedValueChanged += listBoxMan_SelectedValueChanged;
-
-                listBoxMan.SelectedIndex = 0;
-
-                SetResult();
-
-                lblTotal.Text = listBoxMan.Items.Count.ToString();
+                btnMAGIC_Click(null, null);
             }
         }
 
@@ -91,6 +113,8 @@ namespace ScrappingDataroma
                 listBoxResult.Items.Add($"{pos}:{item.Siglas} >> {item.Nombre} - {item.Count}");
                 count++;
             }
+
+            UpdateEntranSalen();
         }
 
         private async Task<string> FetchHtmlContentAsync(string url)
@@ -189,6 +213,9 @@ namespace ScrappingDataroma
             // Tomar los primeros 'numeroPortafolios' portafolios en orden
             int numMANs = (txtBoxNumMANs.Text != "0") ? int.Parse(txtBoxNumMANs.Text) : listBoxMan.Items.Count;
 
+            if (PortafoliosMAN == null)
+                return new List<ActivoResult>();
+
             var portafoliosSeleccionados = PortafoliosMAN.Take(numMANs);
 
             foreach (var portafolio in portafoliosSeleccionados)
@@ -223,21 +250,30 @@ namespace ScrappingDataroma
 
         private void listBoxMan_SelectedValueChanged(object sender, EventArgs e)
         {
-            Portafolio portafoleo = PortafoliosMAN.Where(x => x.Nombre == listBoxMan.SelectedItem).FirstOrDefault();
-
-            listBoxActivos.Items.Clear();
-
-            if (portafoleo != null)
+            if (PortafoliosMAN != null)
             {
-                foreach (var activo in portafoleo.Activos)
-                    listBoxActivos.Items.Add($"{activo.Siglas} - {activo.Peso}%");
+                Portafolio portafoleo = PortafoliosMAN.Where(x => x.Nombre == listBoxMan.SelectedItem).FirstOrDefault();
+
+                listBoxActivos.Items.Clear();
+
+                if (portafoleo != null)
+                {
+                    foreach (var activo in portafoleo.Activos)
+                        listBoxActivos.Items.Add($"{activo.Siglas} - {activo.Peso}%");
+                }
             }
         }
 
         private void btnRefresh_Click(object sender, EventArgs e)
         {
-            SetResult();
+            if (listBoxResult.Items.Count == 0)
+                btnMAGIC_Click(null, null);
 
+            SetResult();
+        }
+
+        private void UpdateEntranSalen()
+        {
             listBoxEntran.Items.Clear();
             listBoxSalen.Items.Clear();
 
@@ -266,7 +302,7 @@ namespace ScrappingDataroma
             {
                 bool exist = false;
                 var act1 = listBoxFINAL.Items[x1].ToString().Trim().Split(" ")[0].Trim();
-                
+
                 for (int x2 = 0; x2 < activos; x2++)
                 {
                     var act = listBoxResult.Items[x2].ToString().Split(":")[1].Trim().Split(" ")[0].Trim();
@@ -280,7 +316,6 @@ namespace ScrappingDataroma
                 if (!exist)
                     listBoxSalen.Items.Add(act1);
             }
-
         }
 
         private void ListBox1_DrawItem(object sender, DrawItemEventArgs e)
@@ -325,24 +360,26 @@ namespace ScrappingDataroma
             string result = "";
 
             foreach (var item in listBoxFINAL.Items)
-                result += item.ToString()+"\n";
+                result += item.ToString() + "\n";
 
-            lblSaved.Text = SaveHtmlToFile(result);
+            lblSaved.Text = SaveHtmlToFile(result, FileName);
         }
 
         // Método para guardar el HTML en un archivo local
-        private string SaveHtmlToFile(string htmlContent)
+        private string SaveHtmlToFile(string htmlContent, string fileName)
         {
             // Obtener el directorio Documentos del usuario
             string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 
-            // Nombre del archivo HTML con fecha y hora para evitar conflictos            
-            string filePath = Path.Combine(documentsPath, FileName);
+            // Nombre del archivo HTML con fecha y hora para evitar conflictos
+            string filePath = Path.Combine(documentsPath, fileName);
 
             try
             {
                 // Guardar el contenido en el archivo
+                File.Delete(filePath);
                 File.WriteAllText(filePath, htmlContent);
+
                 return filePath;
             }
             catch (IOException ex)
@@ -354,5 +391,7 @@ namespace ScrappingDataroma
                 return string.Empty;
             }
         }
+
+
     }
 }

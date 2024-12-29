@@ -30,7 +30,7 @@ namespace ScrappingDataroma
         /// </summary>
         private void InitializeComponent()
         {
-            btnGO = new Button();
+            btnMAGIC = new Button();
             listBoxMan = new ListBox();
             listBoxActivos = new ListBox();
             listBoxResult = new ListBox();
@@ -48,17 +48,19 @@ namespace ScrappingDataroma
             listBoxEntran = new ListBox();
             label4 = new Label();
             label5 = new Label();
+            btnDownload = new Button();
+            lblLastDownload = new Label();
             SuspendLayout();
             // 
-            // btnGO
+            // btnMAGIC
             // 
-            btnGO.Location = new Point(12, 7);
-            btnGO.Name = "btnGO";
-            btnGO.Size = new Size(307, 24);
-            btnGO.TabIndex = 0;
-            btnGO.Text = "MAGIC!!";
-            btnGO.UseVisualStyleBackColor = true;
-            btnGO.Click += btnGO_Click;
+            btnMAGIC.Location = new Point(359, 9);
+            btnMAGIC.Name = "btnMAGIC";
+            btnMAGIC.Size = new Size(138, 24);
+            btnMAGIC.TabIndex = 0;
+            btnMAGIC.Text = "MAGIC!!";
+            btnMAGIC.UseVisualStyleBackColor = true;
+            btnMAGIC.Click += btnMAGIC_Click;
             // 
             // listBoxMan
             // 
@@ -142,7 +144,7 @@ namespace ScrappingDataroma
             // lblTotal
             // 
             lblTotal.AutoSize = true;
-            lblTotal.Location = new Point(325, 12);
+            lblTotal.Location = new Point(503, 13);
             lblTotal.Name = "lblTotal";
             lblTotal.Size = new Size(21, 14);
             lblTotal.TabIndex = 9;
@@ -227,11 +229,33 @@ namespace ScrappingDataroma
             label5.TabIndex = 17;
             label5.Text = "ENTRAN";
             // 
+            // btnDownload
+            // 
+            btnDownload.BackColor = Color.FromArgb(192, 255, 192);
+            btnDownload.Location = new Point(12, 8);
+            btnDownload.Name = "btnDownload";
+            btnDownload.Size = new Size(120, 24);
+            btnDownload.TabIndex = 18;
+            btnDownload.Text = "DOWNLOAD";
+            btnDownload.UseVisualStyleBackColor = false;
+            btnDownload.Click += btnDownload_Click;
+            // 
+            // lblLastDownload
+            // 
+            lblLastDownload.AutoSize = true;
+            lblLastDownload.Location = new Point(138, 14);
+            lblLastDownload.Name = "lblLastDownload";
+            lblLastDownload.Size = new Size(63, 14);
+            lblLastDownload.TabIndex = 19;
+            lblLastDownload.Text = "YYYYMMdd";
+            // 
             // Main
             // 
             AutoScaleDimensions = new SizeF(7F, 14F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1169, 715);
+            Controls.Add(lblLastDownload);
+            Controls.Add(btnDownload);
             Controls.Add(label5);
             Controls.Add(label4);
             Controls.Add(listBoxEntran);
@@ -249,7 +273,7 @@ namespace ScrappingDataroma
             Controls.Add(listBoxResult);
             Controls.Add(listBoxActivos);
             Controls.Add(listBoxMan);
-            Controls.Add(btnGO);
+            Controls.Add(btnMAGIC);
             Font = new Font("Consolas", 9F);
             Name = "Main";
             Text = "DataRomaData";
@@ -260,7 +284,7 @@ namespace ScrappingDataroma
 
         #endregion
 
-        private Button btnGO;
+        private Button btnMAGIC;
         private ListBox listBoxMan;
         private ListBox listBoxActivos;
         private ListBox listBoxResult;
@@ -278,5 +302,7 @@ namespace ScrappingDataroma
         private ListBox listBoxEntran;
         private Label label4;
         private Label label5;
+        private Button btnDownload;
+        private Label lblLastDownload;
     }
 }
