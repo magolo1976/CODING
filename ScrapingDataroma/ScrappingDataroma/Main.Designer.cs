@@ -50,6 +50,9 @@ namespace ScrappingDataroma
             label5 = new Label();
             btnDownload = new Button();
             lblLastDownload = new Label();
+            btnSearch = new Button();
+            txtSearch = new TextBox();
+            lblSearch = new Label();
             SuspendLayout();
             // 
             // btnMAGIC
@@ -249,11 +252,40 @@ namespace ScrappingDataroma
             lblLastDownload.TabIndex = 19;
             lblLastDownload.Text = "YYYYMMdd";
             // 
+            // btnSearch
+            // 
+            btnSearch.Location = new Point(607, 108);
+            btnSearch.Name = "btnSearch";
+            btnSearch.Size = new Size(81, 23);
+            btnSearch.TabIndex = 20;
+            btnSearch.Text = "Buscar";
+            btnSearch.UseVisualStyleBackColor = true;
+            btnSearch.Click += btnSearch_Click;
+            // 
+            // txtSearch
+            // 
+            txtSearch.Location = new Point(608, 137);
+            txtSearch.Name = "txtSearch";
+            txtSearch.Size = new Size(80, 22);
+            txtSearch.TabIndex = 21;
+            // 
+            // lblSearch
+            // 
+            lblSearch.AutoSize = true;
+            lblSearch.Location = new Point(634, 162);
+            lblSearch.Name = "lblSearch";
+            lblSearch.Size = new Size(28, 14);
+            lblSearch.TabIndex = 22;
+            lblSearch.Text = "000";
+            // 
             // Main
             // 
             AutoScaleDimensions = new SizeF(7F, 14F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1169, 715);
+            Controls.Add(lblSearch);
+            Controls.Add(txtSearch);
+            Controls.Add(btnSearch);
             Controls.Add(lblLastDownload);
             Controls.Add(btnDownload);
             Controls.Add(label5);
@@ -304,5 +336,8 @@ namespace ScrappingDataroma
         private Label label5;
         private Button btnDownload;
         private Label lblLastDownload;
+        private Button btnSearch;
+        private TextBox txtSearch;
+        private Label lblSearch;
     }
 }

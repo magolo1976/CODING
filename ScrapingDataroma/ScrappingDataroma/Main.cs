@@ -1,5 +1,6 @@
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 using ScrappingDataroma.Classes;
 
 namespace ScrappingDataroma
@@ -18,6 +19,11 @@ namespace ScrappingDataroma
 
 
         private void Main_Load(object sender, EventArgs e)
+        {
+            GetPortfoleoData();
+        }
+
+        void GetPortfoleoData()
         {
             string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 
@@ -266,10 +272,13 @@ namespace ScrappingDataroma
 
         private void btnRefresh_Click(object sender, EventArgs e)
         {
+            GetPortfoleoData();
+
             if (listBoxResult.Items.Count == 0)
                 btnMAGIC_Click(null, null);
 
             SetResult();
+
         }
 
         private void UpdateEntranSalen()
@@ -363,6 +372,16 @@ namespace ScrappingDataroma
                 result += item.ToString() + "\n";
 
             lblSaved.Text = SaveHtmlToFile(result, FileName);
+        }
+
+        private void btnSearch_Click(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(txtSearch.Text) && listBoxResult.Items.Count > 0)
+            {
+                string foundItem = listBoxResult.Items.Cast<string>().FirstOrDefault(item => item.ToLower().Contains((":"+txtSearch.Text.ToLower()), StringComparison.OrdinalIgnoreCase)); 
+                
+                lblSearch.Text = (!string.IsNullOrEmpty(foundItem))? foundItem.Split(':')[0] : "NA";
+            }
         }
 
         // Método para guardar el HTML en un archivo local
