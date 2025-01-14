@@ -1,0 +1,1 @@
+C:\MAGOLO\gitCODING\MAUI_Apps\MAUInitialization\MAUInitialization.csproj;x64
