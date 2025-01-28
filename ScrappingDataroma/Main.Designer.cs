@@ -204,10 +204,13 @@ namespace ScrappingDataroma
             // listBoxEntran
             // 
             listBoxEntran.ForeColor = Color.Green;
+            listBoxEntran.DrawMode = DrawMode.OwnerDrawFixed;
+            listBoxEntran.FormattingEnabled = true;
             listBoxEntran.ItemHeight = 14;
             listBoxEntran.Location = new Point(607, 442);
             listBoxEntran.Name = "listBoxEntran";
             listBoxEntran.Size = new Size(81, 228);
+            listBoxEntran.DrawItem += ListBoxEntran_DrawItem;
             listBoxEntran.TabIndex = 15;
             // 
             // label4

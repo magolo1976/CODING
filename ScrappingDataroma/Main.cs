@@ -291,19 +291,23 @@ namespace ScrappingDataroma
             //  ACTIVOS QUE ENTRAN
             for (int x = 0; x < activos; x++)
             {
-                var act = listBoxResult.Items[x].ToString().Split(":")[1].Trim().Split(" ")[0].Trim();
+                string[] activo = listBoxResult.Items[x].ToString().Split(":");
+
+                var act = activo[0] +":"+ activo[1].Trim().Split(" ")[0].Trim();
 
                 bool exist = false;
                 foreach (var actFinal in listBoxFINAL.Items)
                 {
-                    if (actFinal.ToString().Contains($"{act} "))
+                    if (actFinal.ToString().Contains($"{act.Replace(activo[0] + ":", "")} "))
                     {
                         exist = true;
                         break;
                     }
                 }
                 if (!exist)
+                {
                     listBoxEntran.Items.Add(act);
+                }
             }
 
             //  ACTIVOS QUE SALEN
@@ -326,6 +330,37 @@ namespace ScrappingDataroma
                     listBoxSalen.Items.Add(act1);
             }
         }
+
+        private void ListBoxEntran_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            if (e.Index < 0) return;
+
+            // Obtener el ListBox y el elemento actual
+            ListBox listBox = sender as ListBox;
+            string texto = listBox.Items[e.Index].ToString();
+
+            int num = 0;
+            int.TryParse(texto.Split(":")[0], out num);
+
+            // Definir colores: verde para los 10 primeros, gris para el resto
+            Color colorTexto = num > 20 ? Color.Gray : Color.Blue;
+
+            if (num < 12)
+                colorTexto = Color.Green;
+
+            // Dibujar fondo
+            e.DrawBackground();
+
+            // Dibujar texto con el color correspondiente
+            using (Brush brush = new SolidBrush(colorTexto))
+            {
+                e.Graphics.DrawString(texto, e.Font, brush, e.Bounds);
+            }
+
+            // Dibujar borde de foco si es necesario
+            e.DrawFocusRectangle();
+        }
+
 
         private void ListBox1_DrawItem(object sender, DrawItemEventArgs e)
         {
