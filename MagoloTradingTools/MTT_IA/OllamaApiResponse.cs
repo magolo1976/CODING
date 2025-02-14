@@ -1,0 +1,58 @@
+﻿using Newtonsoft.Json;
+using System.Net.Http.Headers;
+using System.Text;
+
+namespace MTT_IA
+{
+    public class OllamaApiResponse
+    {
+        private static readonly HttpClient httpClient = new HttpClient();
+
+        public static async Task<string> GetApiResponseAsync(string _question, string _model)
+        {
+            // Define the URL and the headers
+            string urlApi = "http://localhost:11434/api/chat";
+            httpClient.DefaultRequestHeaders.Accept.Clear();
+            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            // Create the payload
+            var payload = new
+            {
+                model = _model,
+                messages = new[]  {
+                    new {
+                        role = "user",
+                        content = _question
+                    }
+                },
+                stream = false
+            };
+
+            // Serialize the payload to JSON
+            var jsonPayload = JsonConvert.SerializeObject(payload);
+
+            // Create the content to send in the POST request
+            var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+            try
+            {
+                // Send the POST request
+                var response = await httpClient.PostAsync(urlApi, content);
+                response.EnsureSuccessStatusCode(); // Throw if not a success code.
+
+                // Parse the response JSON
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                dynamic result = JsonConvert.DeserializeObject(jsonResponse);
+
+                // Get the desired summary from the response
+                return result.message.content;
+
+            }
+            catch (Exception ex)
+            {
+                // Handle any exceptions
+                return  ($"Error occurred: {ex.Message}");
+            }
+        }
+    }
+}

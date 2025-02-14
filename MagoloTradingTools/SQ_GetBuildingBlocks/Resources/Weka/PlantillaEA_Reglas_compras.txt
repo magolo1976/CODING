@@ -1,0 +1,188 @@
+//+------------------------------------------------------------------+
+//|                                                     {NOMBRE}.mq4 |
+//|                                  Copyright 2023, MetaQuotes Ltd. |
+//|                                             https://www.mql5.com |
+//+------------------------------------------------------------------+
+#property copyright "Copyright 2023, MetaQuotes Ltd."
+#property link      "https://www.mql5.com"
+#property version   "1.00"
+#property strict
+
+datetime time = 0;
+
+input int MagicNumber = 1001003;
+input double Lots = 0.1;
+input string EAComments = "EA_Rules";
+//+------------------------------------------------------------------+
+//| Expert initialization function                                   |
+//+------------------------------------------------------------------+
+int OnInit()
+  {
+//---
+   
+//---
+   return(INIT_SUCCEEDED);
+  }
+//+------------------------------------------------------------------+
+//| Expert deinitialization function                                 |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+  {
+//---
+   
+  }
+//+------------------------------------------------------------------+
+//| Expert tick function                                             |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+//---
+   if (time != Time[0])
+   {
+      time = Time[0];
+   
+      bool compra = false;
+      
+      if 
+      (
+{REGLAS}      
+      )
+      {
+         compra = true;
+      }
+         
+      if (!MarketPositions() && compra)
+         BUY_ToMarket();
+      else if (MarketPositions() && !compra)
+         CloseAll();
+   }
+      
+}
+//+------------------------------------------------------------------+
+//
+//+------------------------------------------------------------------+
+bool MarketPositions()
+{
+   for (int i = (OrdersTotal() - 1); i >= 0; i--)
+   {
+      if (OrderSelect(i, SELECT_BY_POS, MODE_TRADES) == false) {
+         Print("ERROR - Unable to select the order - ", GetLastError());
+         break;
+      } 
+
+      if (OrderMagicNumber() != MagicNumber) continue;      
+      if (OrderSymbol() != Symbol()) continue;
+       
+      if (OrderType() == OP_BUY) {
+         return true;
+      }
+   }
+   
+   return false;
+}
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void CloseAll()
+{
+   for (int i = (OrdersTotal() - 1); i >= 0; i--)
+   {
+      if (OrderSelect(i, SELECT_BY_POS, MODE_TRADES) == false) {
+         Print("ERROR - Unable to select the order - ", GetLastError());
+         break;
+      } 
+      
+      if (OrderMagicNumber() != MagicNumber) continue;  
+      if (OrderSymbol() != Symbol()) continue;
+      
+      bool oc;
+       
+      if (OrderType() == OP_BUY) {
+         oc = OrderClose(OrderTicket(), OrderLots(), Bid, 0, clrRed);
+      }
+   }
+}
+//+------------------------------------------------------------------+
+//|                                             
+//+------------------------------------------------------------------+
+void BUY_ToMarket()
+{  
+   if (!OrderSend(Symbol(), OP_BUY, Lots, Ask, 3, 0, 0, EAComments, MagicNumber, 0, clrBlue)) {
+      Print("Error en la compra");
+   }
+}
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+double CalculatePercentile(int percentile, int i) 
+{
+   int numCierres = 25;
+   
+   double ClosePrices[25];
+   
+   // Rellenar el array con los precios de cierre
+   for(int x = 0; x < numCierres; x++) {
+     ClosePrices[x] = (High[i+x]+Low[i+x])/2;
+   }
+   
+   // Ordenar el array
+   ArraySort(ClosePrices);
+   
+   // Calcular la posición del percentil
+   int index = (int)MathRound(percentile / 100.0 * (numCierres - 1));
+   
+   // Devolver el valor del percentil
+   return ClosePrices[index];
+}
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+double CalculateKurtosis(int dataSize, int vela) 
+{
+   int i;
+   
+   double mean = 0;
+   for(i = 0; i < dataSize; i++) {
+     mean += (High[vela+i]+Low[vela+i])/2;
+   }
+   mean = mean / dataSize;
+
+   double stdDev = 0;
+   for(i = 0; i < dataSize; i++) {
+     stdDev += MathPow(((High[vela+i]+Low[vela+i])/2) - mean, 2);
+   }
+   stdDev = MathSqrt(stdDev / (dataSize - 1));
+
+   double kurtosis = 0;
+   for(i = 0; i < dataSize; i++) {
+     kurtosis += MathPow((((High[vela+i]+Low[vela+i])/2) - mean) / stdDev, 4);
+   }   
+   double a = (dataSize * (dataSize + 1));
+   double b = ((dataSize - 1) * (dataSize - 2) * (dataSize - 3));
+   
+   kurtosis = a / b * kurtosis;
+   kurtosis -= 3 * MathPow((dataSize - 1), 2) / ((dataSize - 2) * (dataSize - 3));
+   
+   return kurtosis;
+}
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+double CalculateLinearRegression(int period, int vela) 
+{
+    double slope, intercept;
+    
+    double sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+    for (int i = 0; i < period; i++) {
+        sumX += i;
+        sumY += (High[vela+i]+Low[vela+i])/2;
+        sumXY += i * ((High[vela+i]+Low[vela+i])/2);
+        sumX2 += i * i;
+    }
+
+    // Calcular la pendiente (slope) y la intersección (intercept)
+    slope = (period * sumXY - sumX * sumY) / (period * sumX2 - sumX * sumX);
+    intercept = (sumY - slope * sumX) / period;
+    
+    return intercept;
+}
