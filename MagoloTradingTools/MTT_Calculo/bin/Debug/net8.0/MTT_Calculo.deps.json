@@ -1,0 +1,39 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "MTT_Calculo/1.0.0": {
+        "dependencies": {
+          "MTTCommon_objects": "1.0.0"
+        },
+        "runtime": {
+          "MTT_Calculo.dll": {}
+        }
+      },
+      "MTTCommon_objects/1.0.0": {
+        "runtime": {
+          "MTTCommon_objects.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "MTT_Calculo/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "MTTCommon_objects/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

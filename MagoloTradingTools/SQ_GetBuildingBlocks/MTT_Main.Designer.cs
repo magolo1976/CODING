@@ -69,6 +69,7 @@
             cmbModels = new ComboBox();
             label6 = new Label();
             txtOpenAIPrompt = new TextBox();
+            posiciónCarverToolStripMenuItem = new ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -183,7 +184,7 @@
             // 
             // cálculoToolStripMenuItem
             // 
-            cálculoToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { distribuciónNormalToolStripMenuItem, kolmogorovSmirnovToolStripMenuItem, tradingDeParesToolStripMenuItem });
+            cálculoToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { distribuciónNormalToolStripMenuItem, kolmogorovSmirnovToolStripMenuItem, tradingDeParesToolStripMenuItem, posiciónCarverToolStripMenuItem });
             cálculoToolStripMenuItem.Name = "cálculoToolStripMenuItem";
             cálculoToolStripMenuItem.Size = new Size(68, 20);
             cálculoToolStripMenuItem.Text = "Cálculo";
@@ -382,6 +383,13 @@
             txtOpenAIPrompt.Size = new Size(548, 62);
             txtOpenAIPrompt.TabIndex = 14;
             // 
+            // posiciónCarverToolStripMenuItem
+            // 
+            posiciónCarverToolStripMenuItem.Name = "posiciónCarverToolStripMenuItem";
+            posiciónCarverToolStripMenuItem.Size = new Size(207, 22);
+            posiciónCarverToolStripMenuItem.Text = "Posición Carver";
+            posiciónCarverToolStripMenuItem.Click += posiciónCarverToolStripMenuItem_Click;
+            // 
             // MTT_Main
             // 
             AutoScaleDimensions = new SizeF(7F, 14F);
@@ -456,5 +464,6 @@
         private ComboBox cmbModels;
         private Label label6;
         private TextBox txtOpenAIPrompt;
+        private ToolStripMenuItem posiciónCarverToolStripMenuItem;
     }
 }

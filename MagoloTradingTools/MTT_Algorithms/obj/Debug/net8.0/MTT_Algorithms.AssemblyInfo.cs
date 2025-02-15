@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MTT_Algorithms")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b9ab2d0db5956f47e4a28659249fd148f7c333ca")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6e35a3d87e5d896f42ee1ac09b231680b31783fd")]
 [assembly: System.Reflection.AssemblyProductAttribute("MTT_Algorithms")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MTT_Algorithms")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

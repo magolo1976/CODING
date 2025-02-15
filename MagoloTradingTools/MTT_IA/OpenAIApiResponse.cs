@@ -6,18 +6,21 @@ namespace MTT_IA
 {
     public class OpenAIApiResponse
     {
-        private readonly string ApiKey = "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";
+        private readonly string DatoImportante = "xJp0Y+J38j1EwxwsbgH4irKg4JZkTQ92XsXqmYkWTyryNlH4SldaolKIvFNLLHNJY8acRS/gEJx+QXbC4eKQcnrSICv1IwuzqTfIva4OX1BZ6ZnGC9CrIpOpv/jyVOqvZgLHK6RthIs2dSHzFT5X9ur1DG1DQLM27QiojEbLhKTz5N7VFKNHHE7xAWZOJwPAagNPM5mnCgr7PQaSLGD5TYu9km0RHsqmxWwrEwjKIEI=";
         private readonly HttpClient httpClient;
 
         public OpenAIApiResponse()
         {
+            string decryptedSecret = ApiSecretManager.DecryptSecret(DatoImportante);
+
             httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ApiKey);
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", decryptedSecret);
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
         public async Task<string> GetOpenAIResponseAsync(string systemPrompt, string userQuestion)
         {
+            
             var payload = new[] {
                 new { role = "system", content = systemPrompt },
                 new { role = "user", content = userQuestion }

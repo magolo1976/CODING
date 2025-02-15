@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace MTT_RuleExtraction
 {
-    internal class Plot_Price_Evolution
+    internal class PlotPriceEvolution
     {
         /* PYTHON
          * 
@@ -76,7 +76,7 @@ namespace MTT_RuleExtraction
             public string Color { get; set; }
         }
 
-        public List<PeriodData> PlotPriceEvolution(DataTable df, string dateColumn,
+        public static List<PeriodData> Plot_Price_Evolution(DataTable df, string dateColumn,
             string trainStart, string trainEnd, string testStart, string testEnd,
             string forwardStart, string forwardEnd)
         {
@@ -106,7 +106,7 @@ namespace MTT_RuleExtraction
             return periods;
         }
 
-        private List<PriceData> FilterData(DataTable df, string dateColumn, DateTime startDate, DateTime endDate)
+        private static List<PriceData> FilterData(DataTable df, string dateColumn, DateTime startDate, DateTime endDate)
         {
             var result = new List<PriceData>();
 

@@ -7,6 +7,7 @@ using MTT01_winforms.UControls.Calculo;
 using MTT01_winforms.UControls.WebScrapping;
 using MTT_IA;
 using MTT_Algorithms;
+using MTT_Calculo;
 
 namespace MTT01_winforms
 {
@@ -246,5 +247,24 @@ namespace MTT01_winforms
 
         }
 
+        private void posiciónCarverToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Generar datos de ejemplo: retornos diarios (%)
+            List<double> dailyReturns = new List<double>
+            {
+                0.01, -0.02, 0.03, -0.01, 0.02, 0.01, -0.01, 0.02, -0.03, 0.01,
+                0.02, -0.01, 0.01, -0.02, 0.03, -0.01, 0.02, 0.01, -0.01, 0.02,
+                -0.03, 0.01, 0.02, -0.01, 0.01, -0.02, 0.03, -0.01, 0.02, 0.01,
+                -0.01, 0.02, -0.03, 0.01, 0.02, -0.01, 0.01, -0.02, 0.03, -0.01
+            };
+
+            // Parámetros
+            double targetVolatility = 0.10; // 10% anual
+            int lookbackPeriod = 30; // Usar los últimos 30 días
+
+            // Calcular el tamaño de posición ajustado por volatilidad
+            double positionSize = RobertCarverPositionSize.Calculate(dailyReturns, targetVolatility, lookbackPeriod, 2);
+
+        }
     }
 }

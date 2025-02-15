@@ -70,10 +70,10 @@ from datetime import datetime
 
     return fig"""
 
-def create_returns_stats_table(train_returns, test_returns, forward_returns):
-    """
+"""def create_returns_stats_table(train_returns, test_returns, forward_returns):
+    \"""
     Crea una tabla con las estadísticas de los retornos
-    """
+    \"""
     def calculate_stats(returns):
         if returns.empty:
             return {
@@ -134,20 +134,20 @@ def create_returns_stats_table(train_returns, test_returns, forward_returns):
         ]
     }).set_index('Estadística')
     
-    return stats_df
+    return stats_df"""
 
-def select_uncorrelated_features(df, features, threshold=0.95):
-    """
+"""def select_uncorrelated_features(df, features, threshold=0.95):
+    \"""
     Selecciona features con baja correlación de manera iterativa.
     Maneja casos de valores constantes y NaN.
-    """
+    \"""
     if len(features) == 0:
         return []
     
     def safe_correlation(series1, series2):
-        """
+        \"""
         Calcula correlación de manera segura, devolviendo 0 si hay error
-        """
+        \"""
         try:
             # Eliminar filas donde cualquiera de las series tenga NaN
             mask = ~(series1.isna() | series2.isna())
@@ -179,12 +179,12 @@ def select_uncorrelated_features(df, features, threshold=0.95):
             except:
                 continue
     
-    return selected_features
+    return selected_features"""    
 
-def calculate_random_profits(returns, side='long', n_simulations=1000):
-    """
+"""def calculate_random_profits(returns, side='long', n_simulations=1000):
+    \"""
     Calcula los profits aleatorios para el Monkey Test usando len(train)/3
-    """
+    \"""
     side_multiplier = 1 if side == 'long' else -1
     random_metrics = []
     sample_size = int(len(returns)/3)
@@ -197,13 +197,13 @@ def calculate_random_profits(returns, side='long', n_simulations=1000):
         metric = mean/std if std != 0 else 0
         random_metrics.append(metric)
     
-    return np.array(random_metrics)
+    return np.array(random_metrics)"""
 
-def analyze_feature(df, feature, target, side):
-    """
+"""def analyze_feature(df, feature, target, side):
+    \"""
     Analiza una feature dividiendo en terciles y retorna la métrica del mejor tercil
     junto con su regla correspondiente
-    """
+    \"""
     side_multiplier = 1 if side == 'long' else -1
     adjusted_target = df[target] * side_multiplier
     
@@ -234,12 +234,12 @@ def analyze_feature(df, feature, target, side):
         
         return best_metric, rule
     except:
-        return 0, ""
+        return 0, """"
 
-def analyze_all_features(df, target_column, date_column, side, correlation_threshold=0.7):
-    """
+"""def analyze_all_features(df, target_column, date_column, side, correlation_threshold=0.7):
+    \"""
     Analiza todas las features, primero reduciendo la multicolinealidad
-    """
+    \"""
     exclude_columns = [date_column, 'Open', 'Close', target_column, 'Target']
     initial_features = [col for col in df.columns if col not in exclude_columns]
     
@@ -274,12 +274,12 @@ def analyze_all_features(df, target_column, date_column, side, correlation_thres
         results_df['score'] = results_df['score'].round(2)
         return results_df, rules_dict
     else:
-        return pd.DataFrame(columns=['feature', 'score']), {}
+        return pd.DataFrame(columns=['feature', 'score']), {}"""
 
-def calculate_random_metrics_compound(returns, side='long', n_simulations=1000):
-    """
+"""def calculate_random_metrics_compound(returns, side='long', n_simulations=1000):
+    \"""
     Calcula los monos para reglas compuestas usando len(train)/9
-    """
+    \"""
     side_multiplier = 1 if side == 'long' else -1
     random_metrics = []
     sample_size = int(len(returns)/9)
@@ -292,7 +292,7 @@ def calculate_random_metrics_compound(returns, side='long', n_simulations=1000):
         metric = mean/std if std != 0 else 0
         random_metrics.append(metric)
     
-    return np.array(random_metrics)
+    return np.array(random_metrics)"""
 
 def plot_monkey_distribution(random_metrics, threshold, period='train'):
     """
