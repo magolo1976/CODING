@@ -6,11 +6,12 @@ namespace MTT_IA
 {
     public class OpenAIApiResponse
     {
-        private readonly string DatoImportante = "xJp0Y+J38j1EwxwsbgH4irKg4JZkTQ92XsXqmYkWTyryNlH4SldaolKIvFNLLHNJY8acRS/gEJx+QXbC4eKQcnrSICv1IwuzqTfIva4OX1BZ6ZnGC9CrIpOpv/jyVOqvZgLHK6RthIs2dSHzFT5X9ur1DG1DQLM27QiojEbLhKTz5N7VFKNHHE7xAWZOJwPAagNPM5mnCgr7PQaSLGD5TYu9km0RHsqmxWwrEwjKIEI=";
+        private readonly string DatoImportante = "DvXz3xrZ4/dgS9VyWNuv/wKgb4MZ6YurlR4xuwX8OUPNV0lKmU83upGAuYgUABqhXXMboKolqRYd3O89z1XZQghNgG7YMPbSxpUbzdpv+utnimlxwz4FJakMqO9BOR6FF3YYTkWBVkWZXegzlw+jYpnZ7dHQ0Ca7sp9cLmZdsWFaG4g0jhNTmwm6w9E7l5Ku1RpvchKepkozhtpRX8YkVyvpT/6JQWeYIi/GeAEmqFw=";
         private readonly HttpClient httpClient;
 
         public OpenAIApiResponse()
         {
+            //string encrypt = ApiSecretManager.EncryptSecret(DatoImportante);
             string decryptedSecret = ApiSecretManager.DecryptSecret(DatoImportante);
 
             httpClient = new HttpClient();
