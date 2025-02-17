@@ -47,6 +47,7 @@
             distribuciónNormalToolStripMenuItem = new ToolStripMenuItem();
             kolmogorovSmirnovToolStripMenuItem = new ToolStripMenuItem();
             tradingDeParesToolStripMenuItem = new ToolStripMenuItem();
+            posiciónCarverToolStripMenuItem = new ToolStripMenuItem();
             webScrappingToolStripMenuItem = new ToolStripMenuItem();
             alphavantageToolStripMenuItem = new ToolStripMenuItem();
             neuronasToolStripMenuItem = new ToolStripMenuItem();
@@ -69,7 +70,6 @@
             cmbModels = new ComboBox();
             label6 = new Label();
             txtOpenAIPrompt = new TextBox();
-            posiciónCarverToolStripMenuItem = new ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -210,6 +210,13 @@
             tradingDeParesToolStripMenuItem.Text = "Trading de Pares";
             tradingDeParesToolStripMenuItem.Click += tradingDeParesToolStripMenuItem_Click;
             // 
+            // posiciónCarverToolStripMenuItem
+            // 
+            posiciónCarverToolStripMenuItem.Name = "posiciónCarverToolStripMenuItem";
+            posiciónCarverToolStripMenuItem.Size = new Size(207, 22);
+            posiciónCarverToolStripMenuItem.Text = "Posición Carver";
+            posiciónCarverToolStripMenuItem.Click += posiciónCarverToolStripMenuItem_Click;
+            // 
             // webScrappingToolStripMenuItem
             // 
             webScrappingToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { alphavantageToolStripMenuItem });
@@ -264,6 +271,7 @@
             btnOllamaConnect.TabIndex = 1;
             btnOllamaConnect.Text = "Ollama Connect";
             btnOllamaConnect.UseVisualStyleBackColor = true;
+            btnOllamaConnect.Visible = false;
             btnOllamaConnect.Click += btnConnect_Click;
             // 
             // txtOllamaAnswer
@@ -274,6 +282,7 @@
             txtOllamaAnswer.ScrollBars = ScrollBars.Vertical;
             txtOllamaAnswer.Size = new Size(548, 563);
             txtOllamaAnswer.TabIndex = 2;
+            txtOllamaAnswer.Visible = false;
             // 
             // txtOpenAIAnswer
             // 
@@ -283,6 +292,7 @@
             txtOpenAIAnswer.ScrollBars = ScrollBars.Vertical;
             txtOpenAIAnswer.Size = new Size(548, 474);
             txtOpenAIAnswer.TabIndex = 3;
+            txtOpenAIAnswer.Visible = false;
             // 
             // txtOllamaQuestion
             // 
@@ -292,6 +302,7 @@
             txtOllamaQuestion.ScrollBars = ScrollBars.Vertical;
             txtOllamaQuestion.Size = new Size(548, 62);
             txtOllamaQuestion.TabIndex = 5;
+            txtOllamaQuestion.Visible = false;
             // 
             // label1
             // 
@@ -301,6 +312,7 @@
             label1.Size = new Size(119, 14);
             label1.TabIndex = 6;
             label1.Text = "Ollama Question:";
+            label1.Visible = false;
             // 
             // label2
             // 
@@ -310,6 +322,7 @@
             label2.Size = new Size(105, 14);
             label2.TabIndex = 7;
             label2.Text = "Ollama Answer:";
+            label2.Visible = false;
             // 
             // label3
             // 
@@ -319,6 +332,7 @@
             label3.Size = new Size(56, 14);
             label3.TabIndex = 10;
             label3.Text = "Answer:";
+            label3.Visible = false;
             // 
             // label4
             // 
@@ -328,6 +342,7 @@
             label4.Size = new Size(70, 14);
             label4.TabIndex = 9;
             label4.Text = "Question:";
+            label4.Visible = false;
             // 
             // txtOpenAIQuestion
             // 
@@ -337,6 +352,7 @@
             txtOpenAIQuestion.ScrollBars = ScrollBars.Vertical;
             txtOpenAIQuestion.Size = new Size(548, 62);
             txtOpenAIQuestion.TabIndex = 8;
+            txtOpenAIQuestion.Visible = false;
             // 
             // btnOpenAIConnect
             // 
@@ -346,6 +362,7 @@
             btnOpenAIConnect.TabIndex = 11;
             btnOpenAIConnect.Text = "OpenAI Connect";
             btnOpenAIConnect.UseVisualStyleBackColor = true;
+            btnOpenAIConnect.Visible = false;
             btnOpenAIConnect.Click += btnOpenAIConnect_Click;
             // 
             // label5
@@ -356,6 +373,7 @@
             label5.Size = new Size(98, 14);
             label5.TabIndex = 12;
             label5.Text = "Ollama Model:";
+            label5.Visible = false;
             // 
             // cmbModels
             // 
@@ -364,6 +382,7 @@
             cmbModels.Name = "cmbModels";
             cmbModels.Size = new Size(121, 22);
             cmbModels.TabIndex = 13;
+            cmbModels.Visible = false;
             // 
             // label6
             // 
@@ -373,6 +392,7 @@
             label6.Size = new Size(105, 14);
             label6.TabIndex = 15;
             label6.Text = "System Prompt:";
+            label6.Visible = false;
             // 
             // txtOpenAIPrompt
             // 
@@ -382,13 +402,7 @@
             txtOpenAIPrompt.ScrollBars = ScrollBars.Vertical;
             txtOpenAIPrompt.Size = new Size(548, 62);
             txtOpenAIPrompt.TabIndex = 14;
-            // 
-            // posiciónCarverToolStripMenuItem
-            // 
-            posiciónCarverToolStripMenuItem.Name = "posiciónCarverToolStripMenuItem";
-            posiciónCarverToolStripMenuItem.Size = new Size(207, 22);
-            posiciónCarverToolStripMenuItem.Text = "Posición Carver";
-            posiciónCarverToolStripMenuItem.Click += posiciónCarverToolStripMenuItem_Click;
+            txtOpenAIPrompt.Visible = false;
             // 
             // MTT_Main
             // 

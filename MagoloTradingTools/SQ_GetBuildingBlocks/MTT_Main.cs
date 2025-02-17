@@ -8,6 +8,7 @@ using MTT01_winforms.UControls.WebScrapping;
 using MTT_IA;
 using MTT_Algorithms;
 using MTT_Calculo;
+using MTT01_winforms.UControls.RuleExtraction;
 
 namespace MTT01_winforms
 {
@@ -244,7 +245,7 @@ namespace MTT01_winforms
 
         private void cargaDeFicheroToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            LoadControlIntoMain(new RuleExtractorControl());
         }
 
         private void posiciónCarverToolStripMenuItem_Click(object sender, EventArgs e)
