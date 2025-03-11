@@ -1,633 +1,443 @@
-﻿using OxyPlot.WindowsForms;
+﻿using MTT_RuleExtraction;
+using System.Data;
 
 namespace MTT01_winforms.UControls.RuleExtraction
 {
     public partial class RuleExtractorControl : UserControl
     {
-        // Controls declaration
-        private TabControl mainTabControl;
-        private TabPage tabData, tabFeatures, tabRules, tabValidation, tabForward, tabBacktest;
-
-        // Data Tab Controls
-        private Button btnLoadCSV;
-        private DataGridView dataPreviewGrid;
-        private Label lblDateRange;
-        private DateTimePicker dtpTestStart, dtpTestEnd, dtpTrainStart, dtpTrainEnd, dtpForwardStart, dtpForwardEnd;
-        private PlotView priceEvolutionChart;
-
-        // Feature Selection Tab Controls
-        private ComboBox cmbSide;
-        private TrackBar sldCorrelation;
-        private Button btnAnalyzeFeatures;
-        private ProgressBar progressFeatures;
-        private DataGridView featuresGrid;
-
-        // Rule Extraction Tab Controls
-        private PlotView monkeyDistributionChart;
-        private ComboBox cmbBaseFeature;
-        private Button btnFindRules;
-        private ProgressBar progressRules;
-        private Label lblRuleProgress;
-        private DataGridView rulesGrid;
-        private PlotView ruleEvolutionChart;
-
-        // Validation Tab Controls
-        private ProgressBar progressValidation;
-        private DataGridView validationGrid;
-        private PlotView validationRuleChart;
-
-        // Forward Tab Controls
-        private TrackBar sldValidation;
-        private Label lblValidationValue;
-        private DataGridView filteredRulesGrid;
-        private PlotView forwardRuleChart;
-
-        // Backtest Tab Controls
-        private ComboBox cmbRuleForBacktest;
-        private Label lblTotalTrades, lblTotalReturn, lblAvgReturn, lblWinRate;
-        private Label lblSharpe, lblMaxDD, lblBestTrade, lblWorstTrade;
-        private PlotView equityCurveChart, returnsDistChart;
+        private CalculateBacktestMetrics _analyzer = new CalculateBacktestMetrics();
+        private Dictionary<string, DataTable> _dataTables = new Dictionary<string, DataTable>();
+        private Dictionary<string, object> _sessionState = new Dictionary<string, object>();
 
         public RuleExtractorControl()
         {
             InitializeComponent();
         }
 
-        private void InitializeComponent()
+        private async void BtnLoadCSV_Click(object sender, EventArgs e)
         {
-            this.Size = new Size(1024, 768);
-
-            // Create main layout
-            mainTabControl = new TabControl();
-            mainTabControl.Dock = DockStyle.Fill;
-
-            // Create tabs
-            tabData = new TabPage("Data");
-            tabFeatures = new TabPage("Feature Selection");
-            tabRules = new TabPage("Rule Extraction");
-            tabValidation = new TabPage("Validation");
-            tabForward = new TabPage("Forward");
-            tabBacktest = new TabPage("Backtest");
-
-            // Disable other tabs initially
-            tabFeatures.Enabled = false;
-            tabRules.Enabled = false;
-            tabValidation.Enabled = false;
-            tabForward.Enabled = false;
-            tabBacktest.Enabled = false;
-
-            // Setup each tab
-            SetupDataTab();
-            SetupFeatureSelectionTab();
-            SetupRuleExtractionTab();
-            SetupValidationTab();
-            SetupForwardTab();
-            SetupBacktestTab();
-
-            // Add tabs to control
-            mainTabControl.Controls.Add(tabData);
-            mainTabControl.Controls.Add(tabFeatures);
-            mainTabControl.Controls.Add(tabRules);
-            mainTabControl.Controls.Add(tabValidation);
-            mainTabControl.Controls.Add(tabForward);
-            mainTabControl.Controls.Add(tabBacktest);
-
-            // Header and layout
-            Label headerLabel = new Label
+            var openFileDialog = new OpenFileDialog
             {
-                Text = "🤖 RULE EXTRACTOR",
-                Font = new Font(FontFamily.GenericSansSerif, 24, FontStyle.Bold),
-                AutoSize = true,
-                Location = new Point(10, 10)
+                Filter = "CSV files (*.csv)|*.csv",
+                Title = "Select a CSV File"
             };
 
-            Panel separatorPanel = new Panel
+            if (openFileDialog.ShowDialog() ==  DialogResult.OK)
             {
-                Height = 2,
-                BackColor = Color.LightGray,
-                Dock = DockStyle.Top
-            };
-
-            TableLayoutPanel mainLayout = new TableLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                RowCount = 3
-            };
-            mainLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 2));
-            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-
-            mainLayout.Controls.Add(headerLabel, 0, 0);
-            mainLayout.Controls.Add(separatorPanel, 0, 1);
-            mainLayout.Controls.Add(mainTabControl, 0, 2);
-
-            this.Controls.Add(mainLayout);
-        }
-
-        private void SetupDataTab()
-        {
-            btnLoadCSV = new Button
-            {
-                Text = "Load CSV File",
-                Size = new Size(150, 30),
-                Location = new Point(10, 10)
-            };
-            btnLoadCSV.Click += BtnLoadCSV_Click;
-
-            Label dataPreviewLabel = new Label
-            {
-                Text = "Data Preview",
-                Font = new Font(FontFamily.GenericSansSerif, 10, FontStyle.Bold),
-                Location = new Point(10, 50),
-                AutoSize = true
-            };
-
-            dataPreviewGrid = new DataGridView
-            {
-                ReadOnly = true,
-                Size = new Size(980, 200),
-                Location = new Point(10, 75)
-            };
-
-            lblDateRange = new Label
-            {
-                Text = "Available date range: ",
-                Location = new Point(10, 285),
-                AutoSize = true
-            };
-
-            Label periodSelectionLabel = new Label
-            {
-                Text = "Period Selection",
-                Font = new Font(FontFamily.GenericSansSerif, 10, FontStyle.Bold),
-                Location = new Point(10, 320),
-                AutoSize = true
-            };
-
-            // Set up date pickers for Test, Train, Forward periods
-            SetUpDatePickers();
-
-            Label priceEvolutionLabel = new Label
-            {
-                Text = "Price Evolution",
-                Font = new Font(FontFamily.GenericSansSerif, 10, FontStyle.Bold),
-                Location = new Point(10, 490),
-                AutoSize = true
-            };
-
-            priceEvolutionChart = new PlotView
-            {
-                Location = new Point(10, 515),
-                Size = new Size(980, 300)
-            };
-
-            // Panel scroll implementation
-            Panel scrollPanel = new Panel
-            {
-                AutoScroll = true,
-                Dock = DockStyle.Fill
-            };
-            foreach (Control c in tabData.Controls)
-            {
-                scrollPanel.Controls.Add(c);
-            }
-
-            tabData.Controls.Clear();
-            tabData.Controls.Add(scrollPanel);
-        }
-
-        private void SetUpDatePickers()
-        {
-            // Test Period
-            CreateLabelAndPicker(ref dtpTestStart, "Test Period", new Point(10, 350), new Point(10, 375), new Point(10, 400));
-            CreateLabelAndPicker(ref dtpTestEnd, null, new Point(10, 430), new Point(10, 455), new Point(10, 380));
-
-            // Train Period
-            CreateLabelAndPicker(ref dtpTrainStart, "Train Period", new Point(200, 350), new Point(200, 375), new Point(200, 400));
-            CreateLabelAndPicker(ref dtpTrainEnd, null, new Point(200, 430), new Point(200, 455), new Point(200, 380));
-
-            // Forward Period
-            CreateLabelAndPicker(ref dtpForwardStart, "Forward Period", new Point(400, 350), new Point(400, 375), new Point(400, 400));
-            CreateLabelAndPicker(ref dtpForwardEnd, null, new Point(400, 430), new Point(400, 455), new Point(400, 380));
-        }
-
-        private void CreateLabelAndPicker(ref DateTimePicker dateTimePicker, string labelText, Point labelLocation, Point startLabelLocation, Point pickerLocation)
-        {
-            if (labelText != null)
-            {
-                Label periodLabel = new Label
+                try
                 {
-                    Text = labelText,
-                    Font = new Font(FontFamily.GenericSansSerif, 8, FontStyle.Bold),
-                    Location = labelLocation,
-                    AutoSize = true
-                };
-                tabData.Controls.Add(periodLabel);
+                    // Load and process the data
+                    var dt = LoadCsvFile(openFileDialog.FileName);
+                    dt = CalculateTarget.GetData(dt);
+
+                    // Show preview of the data
+                    dataPreviewGrid.ItemsSource = dt.DefaultView;
+
+                    // Detect date column
+                    string dateColumn = DetectDateColumn(dt);
+                    if (string.IsNullOrEmpty(dateColumn))
+                    {
+                        MessageBox.Show("No date column found. Please make sure your CSV has a date column.");
+                        return;
+                    }
+
+                    // Get date range
+                    DateTime minDate = GetMinDate(dt, dateColumn);
+                    DateTime maxDate = GetMaxDate(dt, dateColumn);
+                    lblDateRange.Content = $"Available date range: {minDate:yyyy-MM-dd} to {maxDate:yyyy-MM-dd}";
+
+                    // Set default dates
+                    dtpTestStart.SelectedDate = minDate;
+                    dtpTestEnd.SelectedDate = new DateTime(2020, 1, 1);
+                    dtpTrainStart.SelectedDate = new DateTime(2020, 1, 1);
+                    dtpTrainEnd.SelectedDate = new DateTime(2023, 1, 1);
+                    dtpForwardStart.SelectedDate = new DateTime(2023, 1, 1);
+                    dtpForwardEnd.SelectedDate = maxDate;
+
+                    // Store data in session state
+                    _sessionState["df"] = dt;
+                    _sessionState["date_column"] = dateColumn;
+
+                    // Update masks when dates are selected
+                    UpdateDateMasks();
+
+                    // Enable other tabs
+                    tabFeatures.IsEnabled = true;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error processing file: {ex.Message}");
+                }
             }
-
-            Label startLabel = new Label
-            {
-                Text = "Start:",
-                Location = startLabelLocation,
-                AutoSize = true
-            };
-            tabData.Controls.Add(startLabel);
-
-            dateTimePicker = new DateTimePicker
-            {
-                Location = pickerLocation,
-                Size = new Size(150, 25)
-            };
-            tabData.Controls.Add(dateTimePicker);
         }
 
-        private void SetupFeatureSelectionTab()
+        private void UpdateDateMasks()
         {
-            CreateLabelAndComboBox();
+            //if (!_sessionState.ContainsKey("df") || !_sessionState.ContainsKey("date_column"))
+            //    return;
 
-            // Analyze Features Button
-            btnAnalyzeFeatures = new Button
-            {
-                Text = "Analyze Features",
-                Size = new Size(150, 30),
-                Location = new Point(10, 90)
-            };
-            btnAnalyzeFeatures.Click += BtnAnalyzeFeatures_Click;
+            //var dt = (DataTable)_sessionState["df"];
+            //string dateColumn = (string)_sessionState["date_column"];
 
-            // Progress Bar
-            progressFeatures = new ProgressBar
-            {
-                Size = new Size(980, 5),
-                Location = new Point(10, 130),
-                Visible = false
-            };
+            //DateTime testStart = dtpTestStart.SelectedDate ?? DateTime.MinValue;
+            //DateTime testEnd = dtpTestEnd.SelectedDate ?? DateTime.MaxValue;
+            //DateTime trainStart = dtpTrainStart.SelectedDate ?? DateTime.MinValue;
+            //DateTime trainEnd = dtpTrainEnd.SelectedDate ?? DateTime.MaxValue;
+            //DateTime forwardStart = dtpForwardStart.SelectedDate ?? DateTime.MinValue;
+            //DateTime forwardEnd = dtpForwardEnd.SelectedDate ?? DateTime.MaxValue;
 
-            // Features Grid
-            Label featuresLabel = new Label
-            {
-                Text = "Selected Features:",
-                Font = new Font(FontFamily.GenericSansSerif, 10, FontStyle.Bold),
-                Location = new Point(10, 145),
-                AutoSize = true
-            };
+            //// Create masks and store in session state
+            //_sessionState["mask_train"] = CreateDateMask(dt, dateColumn, trainStart, trainEnd);
+            //_sessionState["mask_test"] = CreateDateMask(dt, dateColumn, testStart, testEnd);
+            //_sessionState["mask_forward"] = CreateDateMask(dt, dateColumn, forwardStart, forwardEnd);
 
-            featuresGrid = new DataGridView
-            {
-                ReadOnly = true,
-                Size = new Size(980, 500),
-                Location = new Point(10, 170),
-                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom
-            };
+            //// Extract returns for each period
+            //_sessionState["train_returns"] = ExtractReturns(dt, (bool[])_sessionState["mask_train"]);
+            //_sessionState["test_returns"] = ExtractReturns(dt, (bool[])_sessionState["mask_test"]);
+            //_sessionState["forward_returns"] = ExtractReturns(dt, (bool[])_sessionState["mask_forward"]);
 
-            // Add controls to the Features tab
-            tabFeatures.Controls.Add(featuresLabel);
-            tabFeatures.Controls.Add(featuresGrid);
-            tabFeatures.Controls.Add(btnAnalyzeFeatures);
-            tabFeatures.Controls.Add(progressFeatures);
+            //// Update charts
+            //UpdatePriceEvolutionChart();
+            //UpdateReturnsStats();
+            //UpdateKSTest();
+            //UpdateWaterfallChart();
         }
 
-        private void CreateLabelAndComboBox()
+        private async void BtnAnalyzeFeatures_Click(object sender, RoutedEventArgs e)
         {
-            // Side selection
-            Label sideLabel = new Label
-            {
-                Text = "Select Side:",
-                Location = new Point(10, 10),
-                AutoSize = true
-            };
-            tabFeatures.Controls.Add(sideLabel);
+            //if (!_sessionState.ContainsKey("df") || !_sessionState.ContainsKey("mask_train") ||
+            //    !_sessionState.ContainsKey("date_column"))
+            //{
+            //    MessageBox.Show("Please load and configure data first.");
+            //    return;
+            //}
 
-            cmbSide = new ComboBox
-            {
-                Items = { "long", "short" },
-                SelectedIndex = 0,
-                Location = new Point(10, 35),
-                Size = new Size(150, 25)
-            };
-            tabFeatures.Controls.Add(cmbSide);
+            //string side = cmbSide.SelectedItem as string ?? "long";
+            //double correlationThreshold = sldCorrelation.Value;
 
-            // Correlation threshold
-            Label correlationLabel = new Label
-            {
-                Text = "Correlation Threshold:",
-                Location = new Point(200, 10),
-                AutoSize = true
-            };
-            tabFeatures.Controls.Add(correlationLabel);
+            //progressFeatures.Visibility = Visibility.Visible;
+            //await Task.Run(() =>
+            //{
+            //    // Filter data for train period
+            //    var dt = (DataTable)_sessionState["df"];
+            //    bool[] mask = (bool[])_sessionState["mask_train"];
+            //    string dateColumn = (string)_sessionState["date_column"];
 
-            sldCorrelation = CreateTrackBar(new Point(200, 35), 75, 100, 95);
-            sldCorrelation.ValueChanged += (s, e) => correlationLabel.Text = (sldCorrelation.Value / 100.0).ToString("N2");
-            tabFeatures.Controls.Add(sldCorrelation);
+            //    DataTable trainData = FilterDataByMask(dt, mask);
+
+            //    // Analyze features
+            //    Tuple<DataTable, Dictionary<string, object>> result = AnalyzeAllFeatures(
+            //        trainData,
+            //        "Target",
+            //        dateColumn,
+            //        side,
+            //        correlationThreshold
+            //    );
+
+            //    // Store results in session state
+            //    _sessionState["primary_rules"] = result.Item2;
+            //    _sessionState["side"] = side;
+
+            //    // Update UI on UI thread
+            //    Dispatcher.Invoke(() =>
+            //    {
+            //        if (result.Item1.Rows.Count > 0)
+            //        {
+            //            featuresGrid.ItemsSource = result.Item1.DefaultView;
+            //        }
+            //        else
+            //        {
+            //            MessageBox.Show("No significant features found");
+            //        }
+            //        progressFeatures.Visibility = Visibility.Collapsed;
+            //        tabRules.IsEnabled = true;
+            //    });
+            //});
         }
 
-        private TrackBar CreateTrackBar(Point location, int minimum, int maximum, int value)
+        private async void BtnFindRules_Click(object sender, RoutedEventArgs e)
         {
-            return new TrackBar
-            {
-                Minimum = minimum,
-                Maximum = maximum,
-                Value = value,
-                TickFrequency = 1,
-                Location = location,
-                Size = new Size(200, 45)
-            };
+            //if (!_sessionState.ContainsKey("primary_rules") || !_sessionState.ContainsKey("df") ||
+            //    !_sessionState.ContainsKey("mask_train"))
+            //{
+            //    MessageBox.Show("Please complete feature analysis first.");
+            //    return;
+            //}
+
+            //// Calculate monkey distribution if not already done
+            //if (!_sessionState.ContainsKey("compound_threshold"))
+            //{
+            //    progressRules.Visibility = Visibility.Visible;
+            //    lblRuleProgress.Content = "Calculating monkey distribution...";
+
+            //    await Task.Run(() =>
+            //    {
+            //        double[] trainReturns = (double[])_sessionState["train_returns"];
+            //        string side = (string)_sessionState["side"];
+
+            //        double[] randomMetrics = CalculateRandomMetricsCompound(trainReturns, side);
+            //        double threshold = Quantile(randomMetrics, 0.99);
+
+            //        _sessionState["compound_threshold"] = threshold;
+            //        _sessionState["random_metrics"] = randomMetrics;
+
+            //        Dispatcher.Invoke(() =>
+            //        {
+            //            UpdateMonkeyDistributionChart(randomMetrics, threshold);
+            //        });
+            //    });
+            //}
+
+            //// Get base feature and find compound rules
+            //if (cmbBaseFeature.SelectedItem != null)
+            //{
+            //    string selectedFeature = cmbBaseFeature.SelectedItem.ToString();
+
+            //    progressRules.Visibility = Visibility.Visible;
+            //    lblRuleProgress.Content = "Finding compound rules...";
+
+            //    await Task.Run(() =>
+            //    {
+            //        var dt = (DataTable)_sessionState["df"];
+            //        bool[] mask = (bool[])_sessionState["mask_train"];
+            //        DataTable trainData = FilterDataByMask(dt, mask);
+
+            //        var primaryRules = (Dictionary<string, object>)_sessionState["primary_rules"];
+            //        string baseRule = (string)((Dictionary<string, object>)primaryRules[selectedFeature])["rule"];
+
+            //        // Get filtered features
+            //        List<string> filteredFeatures = GetFilteredFeatures(primaryRules);
+
+            //        DataTable compoundRules = FindSecondRule(
+            //            trainData,
+            //            selectedFeature,
+            //            baseRule,
+            //            "Target",
+            //            (string)_sessionState["date_column"],
+            //            (string)_sessionState["side"],
+            //            (double)_sessionState["compound_threshold"],
+            //            filteredFeatures
+            //        );
+
+            //        _sessionState["compound_rules_df"] = compoundRules;
+
+            //        Dispatcher.Invoke(() =>
+            //        {
+            //            rulesGrid.ItemsSource = compoundRules?.DefaultView;
+            //            progressRules.Visibility = Visibility.Collapsed;
+            //            tabValidation.IsEnabled = true;
+            //        });
+            //    });
+            //}
         }
 
-        private void SetupRuleExtractionTab()
+        private async void TabValidation_Selected(object sender, RoutedEventArgs e)
         {
-            monkeyDistributionChart = new PlotView
-            {
-                Location = new Point(10, 10),
-                Size = new Size(980, 200)
-            };
+            //// Check if all required data is present
+            //if (!_sessionState.ContainsKey("df") || !_sessionState.ContainsKey("compound_rules_df") ||
+            //    !_sessionState.ContainsKey("mask_test") || !_sessionState.ContainsKey("test_returns") ||
+            //    !_sessionState.ContainsKey("side"))
+            //{
+            //    MessageBox.Show("Please complete previous steps first.");
+            //    return;
+            //}
 
-            // Base Feature Selection
-            Label baseFeatureLabel = new Label
-            {
-                Text = "Select a base feature:",
-                Location = new Point(10, 220),
-                AutoSize = true
-            };
-            tabRules.Controls.Add(baseFeatureLabel);
+            //// Calculate monkey test for test data if not already done
+            //if (!_sessionState.ContainsKey("test_random_metrics"))
+            //{
+            //    progressValidation.Visibility = Visibility.Visible;
 
-            cmbBaseFeature = new ComboBox
-            {
-                Location = new Point(10, 245),
-                Size = new Size(200, 25)
-            };
-            tabRules.Controls.Add(cmbBaseFeature);
+            //    await Task.Run(() =>
+            //    {
+            //        double[] testReturns = (double[])_sessionState["test_returns"];
+            //        string side = (string)_sessionState["side"];
 
-            // Find Rules Button
-            btnFindRules = new Button
-            {
-                Text = "Find Rules",
-                Size = new Size(150, 30),
-                Location = new Point(10, 280)
-            };
-            btnFindRules.Click += BtnFindRules_Click;
-            tabRules.Controls.Add(btnFindRules);
+            //        double[] randomMetrics = CalculateRandomMetricsCompound(testReturns, side);
+            //        _sessionState["test_random_metrics"] = randomMetrics;
+            //    });
+            //}
 
-            progressRules = CreateProgressBar(new Point(10, 320));
-            tabRules.Controls.Add(progressRules);
+            //// Validate rules
+            //DataTable compoundRules = (DataTable)_sessionState["compound_rules_df"];
+            //if (compoundRules != null && compoundRules.Rows.Count > 0)
+            //{
+            //    progressValidation.Visibility = Visibility.Visible;
 
-            lblRuleProgress = new Label
-            {
-                Location = new Point(10, 330),
-                AutoSize = true
-            };
-            tabRules.Controls.Add(lblRuleProgress);
+            //    await Task.Run(() =>
+            //    {
+            //        var dt = (DataTable)_sessionState["df"];
+            //        bool[] mask = (bool[])_sessionState["mask_test"];
+            //        DataTable testData = FilterDataByMask(dt, mask);
 
-            rulesGrid = CreateDataGridView(new Point(10, 360), 980, 200);
-            tabRules.Controls.Add(rulesGrid);
+            //        DataTable validationResults = ValidateRules(
+            //            testData,
+            //            compoundRules,
+            //            "Target",
+            //            (string)_sessionState["side"],
+            //            (double[])_sessionState["test_random_metrics"]
+            //        );
 
-            Label ruleEvolutionLabel = new Label
-            {
-                Text = "Select a rule to view its evolution:",
-                Location = new Point(10, 570),
-                AutoSize = true
-            };
-            tabRules.Controls.Add(ruleEvolutionLabel);
+            //        // Prepare display data
+            //        DataTable displayDf = PrepareValidationDisplayTable(validationResults);
+            //        _sessionState["validation_df"] = displayDf;
 
-            ruleEvolutionChart = new PlotView
-            {
-                Location = new Point(10, 595),
-                Size = new Size(980, 300)
-            };
-            tabRules.Controls.Add(ruleEvolutionChart);
+            //        Dispatcher.Invoke(() =>
+            //        {
+            //            validationGrid.ItemsSource = displayDf.DefaultView;
+            //            progressValidation.Visibility = Visibility.Collapsed;
+            //            tabForward.IsEnabled = true;
+            //        });
+            //    });
+            //}
         }
 
-        private ProgressBar CreateProgressBar(Point location)
+        private void SldValidation_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            return new ProgressBar
-            {
-                Size = new Size(980, 5),
-                Location = location,
-                Visible = false
-            };
+            //if (!_sessionState.ContainsKey("validation_df"))
+            //    return;
+
+            //double threshold = sldValidation.Value;
+            //_sessionState["validation_threshold"] = threshold;
+
+            //DataTable validationDf = (DataTable)_sessionState["validation_df"];
+            //DataTable filteredRules = FilterRulesByValidation(validationDf, threshold);
+
+            //filteredRulesGrid.ItemsSource = filteredRules.DefaultView;
+            //tabBacktest.IsEnabled = filteredRules.Rows.Count > 0;
         }
 
-        private DataGridView CreateDataGridView(Point location, int width, int height)
+        private void CmbRuleForBacktest_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            return new DataGridView
-            {
-                ReadOnly = true,
-                Size = new Size(width, height),
-                Location = location
-            };
+            //if (cmbRuleForBacktest.SelectedItem == null ||
+            //    !_sessionState.ContainsKey("df") ||
+            //    !_sessionState.ContainsKey("mask_train") ||
+            //    !_sessionState.ContainsKey("mask_test") ||
+            //    !_sessionState.ContainsKey("mask_forward") ||
+            //    !_sessionState.ContainsKey("side"))
+            //    return;
+
+            //string selectedRule = cmbRuleForBacktest.SelectedItem.ToString();
+
+            //// Get all data
+            //var dt = (DataTable)_sessionState["df"];
+            //bool[] maskTrain = (bool[])_sessionState["mask_train"];
+            //bool[] maskTest = (bool[])_sessionState["mask_test"];
+            //bool[] maskForward = (bool[])_sessionState["mask_forward"];
+
+            //// Combine masks
+            //bool[] maskAll = CombineMasks(maskTrain, maskTest, maskForward);
+            //DataTable dfAll = FilterDataByMask(dt, maskAll);
+
+            //// Calculate backtest metrics
+            //var result = new CalculateBacktestMetrics().Calculate_Backtest_Metrics(
+            //    dfAll,
+            //    selectedRule,
+            //    (string)_sessionState["side"]
+            //);
+
+            //if (result != null)
+            //{
+            //    UpdateBacktestMetricsDisplay(result.Metrics);
+
+            //    // Update charts
+            //    equityCurveChart.Model = new PlotBacktestEquityCurve(result.Trades).CalculateEquityCurve(
+            //        result.Trades,
+            //        (string)_sessionState["date_column"]
+            //    ).ToOxyPlotModel();
+
+            //    returnsDistChart.Model = new PlotTradeDistribution(result).PlotTradesDistribution(
+            //        result.Trades
+            //    ).ToOxyPlotModel();
+            //}
+            //else
+            //{
+            //    MessageBox.Show("Not enough trades to calculate metrics");
+            //}
         }
 
-        private void SetupValidationTab()
-        {
-            progressValidation = CreateProgressBar(new Point(10, 10));
-            tabValidation.Controls.Add(progressValidation);
+        // Helper methods (would be implemented in full version)
+        private DataTable LoadCsvFile(string filename) 
+        { 
 
-            validationGrid = CreateDataGridView(new Point(10, 25), 980, 300);
-            tabValidation.Controls.Add(validationGrid);
-
-            Label validationRuleLabel = new Label
-            {
-                Text = "Select a rule to view its evolution in test:",
-                Location = new Point(10, 335),
-                AutoSize = true
-            };
-            tabValidation.Controls.Add(validationRuleLabel);
-
-            validationRuleChart = new PlotView
-            {
-                Location = new Point(10, 360),
-                Size = new Size(980, 300)
-            };
-            tabValidation.Controls.Add(validationRuleChart);
         }
 
-        private void SetupForwardTab()
-        {
-            Label thresholdLabel = new Label
-            {
-                Text = "Validation Threshold:",
-                Location = new Point(10, 10),
-                AutoSize = true
-            };
-            tabForward.Controls.Add(thresholdLabel);
-
-            sldValidation = CreateTrackBar(new Point(10, 35), 0, 100, 90);
-            sldValidation.ValueChanged += SldValidation_ValueChanged;
-            tabForward.Controls.Add(sldValidation);
-
-            lblValidationValue = new Label
-            {
-                Text = "90.0%",
-                Location = new Point(220, 45),
-                AutoSize = true
-            };
-            tabForward.Controls.Add(lblValidationValue);
-
-            Label filteredRulesLabel = new Label
-            {
-                Text = "Rules above validation threshold:",
-                Font = new Font(FontFamily.GenericSansSerif, 10, FontStyle.Bold),
-                Location = new Point(10, 90),
-                AutoSize = true
-            };
-            tabForward.Controls.Add(filteredRulesLabel);
-
-            filteredRulesGrid = CreateDataGridView(new Point(10, 115), 980, 300);
-            tabForward.Controls.Add(filteredRulesGrid);
-
-            Label forwardRuleLabel = new Label
-            {
-                Text = "Select a rule to view its evolution in forward:",
-                Location = new Point(10, 425),
-                AutoSize = true
-            };
-            tabForward.Controls.Add(forwardRuleLabel);
-
-            forwardRuleChart = new PlotView
-            {
-                Location = new Point(10, 450),
-                Size = new Size(980, 300)
-            };
-            tabForward.Controls.Add(forwardRuleChart);
-        }
-
-        private void SetupBacktestTab()
-        {
-            Label ruleSelectionLabel = new Label
-            {
-                Text = "Select a rule for backtest:",
-                Location = new Point(10, 10),
-                AutoSize = true
-            };
-            tabBacktest.Controls.Add(ruleSelectionLabel);
-
-            cmbRuleForBacktest = new ComboBox
-            {
-                Location = new Point(10, 35),
-                Size = new Size(300, 25)
-            };
-            cmbRuleForBacktest.SelectedIndexChanged += CmbRuleForBacktest_SelectionChanged;
-            tabBacktest.Controls.Add(cmbRuleForBacktest);
-
-            GroupBox tradingMetricsBox = CreateMetricsGroupBox("Trading Metrics", new Point(10, 70), new Size(480, 100));
-            GroupBox riskMetricsBox = CreateMetricsGroupBox("Risk Metrics", new Point(500, 70), new Size(480, 100));
-
-            // Trading Metrics
-            lblTotalTrades = CreateMetricLabel("Number of trades: ", new Point(10, 20));
-            lblTotalReturn = CreateMetricLabel("Total return: ", new Point(10, 40));
-            lblAvgReturn = CreateMetricLabel("Average return: ", new Point(10, 60));
-            lblWinRate = CreateMetricLabel("Win rate: ", new Point(10, 80));
-
-            tradingMetricsBox.Controls.Add(lblTotalTrades);
-            tradingMetricsBox.Controls.Add(lblTotalReturn);
-            tradingMetricsBox.Controls.Add(lblAvgReturn);
-            tradingMetricsBox.Controls.Add(lblWinRate);
-
-            // Risk Metrics
-            lblSharpe = CreateMetricLabel("Sharpe ratio: ", new Point(10, 20));
-            lblMaxDD = CreateMetricLabel("Maximum drawdown: ", new Point(10, 40));
-            lblBestTrade = CreateMetricLabel("Best trade: ", new Point(10, 60));
-            lblWorstTrade = CreateMetricLabel("Worst trade: ", new Point(10, 80));
-
-            riskMetricsBox.Controls.Add(lblSharpe);
-            riskMetricsBox.Controls.Add(lblMaxDD);
-            riskMetricsBox.Controls.Add(lblBestTrade);
-            riskMetricsBox.Controls.Add(lblWorstTrade);
-
-            tabBacktest.Controls.Add(tradingMetricsBox);
-            tabBacktest.Controls.Add(riskMetricsBox);
-
-            Label equityCurveLabel = new Label
-            {
-                Text = "Equity Curve",
-                Font = new Font(FontFamily.GenericSansSerif, 10, FontStyle.Bold),
-                Location = new Point(10, 180),
-                AutoSize = true
-            };
-            tabBacktest.Controls.Add(equityCurveLabel);
-
-            equityCurveChart = new PlotView
-            {
-                Location = new Point(10, 205),
-                Size = new Size(980, 250)
-            };
-            tabBacktest.Controls.Add(equityCurveChart);
-
-            Label returnsDistLabel = new Label
-            {
-                Text = "Returns Distribution",
-                Font = new Font(FontFamily.GenericSansSerif, 10, FontStyle.Bold),
-                Location = new Point(10, 465),
-                AutoSize = true
-            };
-            tabBacktest.Controls.Add(returnsDistLabel);
-
-            returnsDistChart = new PlotView
-            {
-                Location = new Point(10, 490),
-                Size = new Size(980, 250)
-            };
-            tabBacktest.Controls.Add(returnsDistChart);
-        }
-
-        private GroupBox CreateMetricsGroupBox(string text, Point location, Size size)
-        {
-            return new GroupBox
-            {
-                Text = text,
-                Location = location,
-                Size = size
-            };
-        }
-
-        private Label CreateMetricLabel(string text, Point location)
-        {
-            return new Label
-            {
-                Text = text,
-                Location = location,
-                AutoSize = true
-            };
-        }
-
-        private void BtnLoadCSV_Click(object sender, EventArgs e)
-        {
-            // Logic to load CSV will be implemented here
-        }
+        //private DataTable CalculateTarget(DataTable dt) { /* Implementation */ return null; }
+        //private string DetectDateColumn(DataTable dt) { /* Implementation */ return null; }
+        //private DateTime GetMinDate(DataTable dt, string dateColumn) { /* Implementation */ return DateTime.MinValue; }
+        //private DateTime GetMaxDate(DataTable dt, string dateColumn) { /* Implementation */ return DateTime.MaxValue; }
+        //private bool[] CreateDateMask(DataTable dt, string dateColumn, DateTime start, DateTime end) { /* Implementation */ return null; }
+        //private double[] ExtractReturns(DataTable dt, bool[] mask) { /* Implementation */ return null; }
+        //private void UpdatePriceEvolutionChart() { /* Implementation */ }
+        //private void UpdateReturnsStats() { /* Implementation */ }
+        //private void UpdateKSTest() { /* Implementation */ }
+        //private void UpdateWaterfallChart() { /* Implementation */ }
+        //private DataTable FilterDataByMask(DataTable dt, bool[] mask) { /* Implementation */ return null; }
+        //private Tuple<DataTable, Dictionary<string, object>> AnalyzeAllFeatures(DataTable dt, string targetCol, string dateCol, string side, double threshold) { /* Implementation */ return null; }
+        //private double[] CalculateRandomMetricsCompound(double[] returns, string side) { /* Implementation */ return null; }
+        //private double Quantile(double[] values, double q) { /* Implementation */ return 0; }
+        //private void UpdateMonkeyDistributionChart(double[] metrics, double threshold) { /* Implementation */ }
+        //private List<string> GetFilteredFeatures(Dictionary<string, object> primaryRules) { /* Implementation */ return null; }
+        //private DataTable FindSecondRule(DataTable dt, string baseFeature, string baseRule, string targetCol, string dateCol, string side, double threshold, List<string> filteredFeatures) { /* Implementation */ return null; }
+        //private DataTable ValidateRules(DataTable dt, DataTable rules, string targetCol, string side, double[] randomMetrics) { /* Implementation */ return null; }
+        //private DataTable PrepareValidationDisplayTable(DataTable validationResults) { /* Implementation */ return null; }
+        //private DataTable FilterRulesByValidation(DataTable validationDf, double threshold) { /* Implementation */ return null; }
+        //private bool[] CombineMasks(bool[] mask1, bool[] mask2, bool[] mask3) { /* Implementation */ return null; }
+        //private void UpdateBacktestMetricsDisplay(BacktestAnalyzer.BacktestMetrics metrics) { /* Implementation */ }
 
         private void BtnAnalyzeFeatures_Click(object sender, EventArgs e)
         {
-            // Logic to analyze features will be implemented here
+            // Will be implemented in logic part
         }
 
         private void BtnFindRules_Click(object sender, EventArgs e)
         {
-            // Logic to find rules will be implemented here
+            // Will be implemented in logic part
         }
 
         private void RulesGrid_SelectionChanged(object sender, EventArgs e)
         {
-            // Logic when rules grid selection changes will be implemented here
+            // Will be implemented in logic part
         }
 
         private void ValidationGrid_SelectionChanged(object sender, EventArgs e)
         {
-            // Logic when validation grid selection changes will be implemented here
+            // Will be implemented in logic part
         }
 
         private void SldValidation_ValueChanged(object sender, EventArgs e)
         {
             lblValidationValue.Text = $"{sldValidation.Value}.0%";
-            // Additional logic can be implemented here
+            // Additional logic will be implemented in logic part
         }
 
         private void FilteredRulesGrid_SelectionChanged(object sender, EventArgs e)
         {
-            // Logic when filtered rules grid selection changes will be implemented here
+            // Will be implemented in logic part
         }
 
         private void CmbRuleForBacktest_SelectionChanged(object sender, EventArgs e)
         {
-            // Logic when rule for backtest selection changes will be implemented here
+            // Will be implemented in logic part
         }
     }
+
+    //// Extension methods for visualization
+    //public static class VisualizationExtensions
+    //{
+    //    public static PlotModel ToOxyPlotModel(this BacktestVisualizer.EquityCurveData data)
+    //    {
+    //        // Convert EquityCurveData to OxyPlot.PlotModel
+    //        PlotModel model = new PlotModel { Title = data.Title };
+    //        /* Implementation */
+    //        return model;
+    //    }
+
+    //    public static PlotModel ToOxyPlotModel(this BacktestVisualizer.HistogramData data)
+    //    {
+    //        // Convert HistogramData to OxyPlot.PlotModel
+    //        PlotModel model = new PlotModel { Title = data.Title };
+    //        /* Implementation */
+    //        return model;
+    //    }
+    //}
 }

@@ -8,7 +8,6 @@ using MTT01_winforms.UControls.WebScrapping;
 using MTT_IA;
 using MTT_Algorithms;
 using MTT_Calculo;
-using MTT01_winforms.UControls.RuleExtraction;
 
 namespace MTT01_winforms
 {
@@ -23,6 +22,48 @@ namespace MTT01_winforms
             cmbModels.Items.Add("llama3.2");
             cmbModels.Items.Add("qwen2.5:32b");
             cmbModels.SelectedIndex = 0;
+
+
+
+
+            double IndXValue = -1.2946;
+            double IndYValue = 19.693;
+
+            double adjustedValue = 1.0 * IndYValue;
+
+            // Calcular e^x y e^(-x) usando la función MathExp
+            double expPlus = Math.Exp(adjustedValue);
+            double expMinus = Math.Exp(-adjustedValue);
+
+            // Calcular tanh(x) = (e^x - e^-x) / (e^x + e^-x)
+            double normalized = (expPlus - expMinus) / (expPlus + expMinus);
+
+            /*double adjustedValue = k * value;
+        return Math.Tanh(adjustedValue);*/
+
+            double diff = IndXValue - IndYValue;
+            double absSum = Math.Abs(IndXValue) + Math.Abs(IndYValue);
+
+            // Evitar división por cero
+            double retValue = 0.0;
+
+            if (absSum != 0)
+            {
+                double normalizedX1 = IndXValue / absSum;
+                double normalizedX2 = IndYValue / absSum;
+
+                // Aplicar la lógica original con valores normalizados
+                double W1 = normalizedX1 * 0.5;
+                double W2 = normalizedX2 * 0.5;
+
+                double calculus = ((W1 * 1.2) + (W2 * 1.2)) / 2;
+
+                // Comparar con los umbrales
+                if (calculus >= 0.2) retValue = 1.0;
+                else if (calculus <= -0.2) retValue = -1.0;
+            }
+
+            retValue = 0;
         }
 
         #region Private Methods
@@ -245,7 +286,7 @@ namespace MTT01_winforms
 
         private void cargaDeFicheroToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            LoadControlIntoMain(new RuleExtractorControl());
+            //LoadControlIntoMain(new RuleExtractorControl());
         }
 
         private void posiciónCarverToolStripMenuItem_Click(object sender, EventArgs e)

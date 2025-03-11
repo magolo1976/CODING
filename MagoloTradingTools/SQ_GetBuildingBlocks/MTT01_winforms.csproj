@@ -9,11 +9,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="UControls\RuleExtraction\RuleExtractorControl.cs" />
+    <Compile Remove="UControls\RuleExtraction\RuleExtractorControl.Designer.cs" />
     <Compile Remove="UControls\RuleExtraction\UCRuleExtraction_Copia.cs" />
     <Compile Remove="UControls\RuleExtraction\UCRuleExtraction_Copia.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Remove="UControls\RuleExtraction\RuleExtractorControl.resx" />
     <EmbeddedResource Remove="UControls\RuleExtraction\UCRuleExtraction_Copia.resx" />
   </ItemGroup>
 
@@ -28,6 +31,7 @@
     <ProjectReference Include="..\MTT_Calculo\MTT_Calculo.csproj" />
     <ProjectReference Include="..\MTT_IA\MTT_IA.csproj" />
     <ProjectReference Include="..\MTT_LoadData\MTT_LoadData.csproj" />
+    <ProjectReference Include="..\MTT_RuleExtraction\MTT_RuleExtraction.csproj" />
     <ProjectReference Include="..\MTT_Weka\MTT_Weka.csproj" />
   </ItemGroup>
 
@@ -59,6 +63,10 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="UControls\RuleExtraction\" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
 ﻿namespace MTT_RuleExtraction
 {
-    internal class CalculateTarget
+    public class CalculateTarget
     {
         /*PYTHON
          * 
