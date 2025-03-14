@@ -1,4 +1,4 @@
-﻿namespace Matematica.Estadistica.DescriptivaUnivariada
+﻿namespace Matematica.Estadistica.Descriptiva.Univariada
 {
     public class Asimetria
     {

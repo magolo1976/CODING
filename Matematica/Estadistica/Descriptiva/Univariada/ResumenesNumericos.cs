@@ -1,4 +1,4 @@
-﻿namespace Matematica.Estadistica.DescriptivaUnivariada
+﻿namespace Matematica.Estadistica.Descriptiva.Univariada
 {
     public class ResumenesNumericos
     {
@@ -153,7 +153,16 @@
             return sumaCuadradosDiferencias / divisor;
         }
 
-        // Función para calcular la covarianza entre dos listas
+        /// <summary>
+        /// Calcula la covarianza entre dos variables.
+        /// Útil para determinar si existe una relación lineal entre dos variables y la dirección de esta relación.
+        /// Una covarianza positiva indica relación directa (cuando una variable aumenta, la otra también).
+        /// Una covarianza negativa indica relación inversa (cuando una variable aumenta, la otra disminuye).
+        /// Una covarianza cercana a cero indica poca o ninguna relación lineal.
+        /// </summary>
+        /// <param name="x">Valores de la variable independiente</param>
+        /// <param name="y">Valores de la variable dependiente</param>
+        /// <returns>Valor de la covarianza</returns>
         public static double Covarianza(List<double> datosX, List<double> datosY)
         {
             if (datosX == null || datosY == null || datosX.Count == 0 || datosY.Count == 0)
