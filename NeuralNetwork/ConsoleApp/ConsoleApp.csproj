@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CVSLibrary\CVSLibrary.csproj" />
     <ProjectReference Include="..\NeuralNetwork.Library\NeuralNetwork.Library.csproj" />
   </ItemGroup>
 

@@ -12,6 +12,7 @@ namespace NeuralNetwork.Library.Implementations
         public IAxon Axon { get; } = new Axon();
 
         public double Bias { get; private set; }
+        public double Delta { get; set; }
 
         public double OutputValue { get; private set; }
 

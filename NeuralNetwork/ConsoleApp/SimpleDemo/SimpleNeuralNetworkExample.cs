@@ -2,7 +2,7 @@
 
 namespace ConsoleApp.SimpleDemo
 {
-    internal static class SimpleNeuralNetworkNetworkExample
+    internal static class SimpleNeuralNetworkExample
     {
         public static void DoExample()
         {

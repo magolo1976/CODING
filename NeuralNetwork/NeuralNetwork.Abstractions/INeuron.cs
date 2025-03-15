@@ -6,6 +6,7 @@ namespace NeuralNetwork.Abstractions
         IEnumerable<ISynapse> Dentrites { get; }
         IAxon Axon { get; }
         double Bias { get; }
+        double Delta { get; set; }
         double OutputValue { get; }
         void SetBiasValue(double value);
         void AddDentrite(ISynapse dentrite);
