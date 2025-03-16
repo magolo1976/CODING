@@ -1,4 +1,5 @@
 using MagoloAITools.AI_Classes;
+using MagoloAITools.ChatConjuto;
 using MagoloAITools.Consultas;
 
 namespace MagoloAITools
@@ -38,7 +39,8 @@ namespace MagoloAITools
 
         private void chatEntreIAsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            ChatEntreIAs chatEntreIAs = new ChatEntreIAs();
+            chatEntreIAs.Show();
         }
 
         #endregion

@@ -53,9 +53,11 @@ namespace ConsoleApp.StudyCase
 
         private static (IEnumerable<StudyData> TrainingGata, IEnumerable<StudyData> TestData) GetTrainAndTestData(StudyData[] data)
         {
+            double INSAMPLE_DATA = 0.7;
+
             Random Rnd = new();
             var ShuffleData = data.OrderBy(x => Rnd.Next()).ToList();
-            int TrainSize = (int)(ShuffleData.Count * 0.7);
+            int TrainSize = (int)(ShuffleData.Count * INSAMPLE_DATA);
             var TrainingData = ShuffleData.Take(TrainSize).ToList();
             var TestData = ShuffleData.Skip(TrainSize).ToList();
 
