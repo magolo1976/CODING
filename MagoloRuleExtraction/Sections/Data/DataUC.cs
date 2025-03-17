@@ -11,6 +11,7 @@ namespace MagoloRuleExtraction.Sections.Data
     public partial class DataUC : UserControl
     {
         // Propiedades para almacenar los datos y máscaras
+        private Main _main;
         private DataTable _dataTable;
         private List<bool> _maskTrain;
         private List<bool> _maskTest;
@@ -22,11 +23,13 @@ namespace MagoloRuleExtraction.Sections.Data
         private double _pValue;
         private double _totalReturns;
 
-        public DataUC()
+        public DataUC(Main main)
         {
             InitializeComponent();
 
             InitializeControls();
+
+            _main = main; 
         }
 
         #region Initialize Controls
@@ -391,6 +394,8 @@ namespace MagoloRuleExtraction.Sections.Data
                 // Habilitar los selectores de fecha y el botón de procesar
                 EnableDateControls(true);
 
+                // DataTable to Main
+                _main.DataTableResult = _dataTable;
             }
             catch (Exception ex)
             {

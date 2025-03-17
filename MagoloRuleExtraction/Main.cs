@@ -4,13 +4,15 @@ using MagoloRuleExtraction.Sections.FeatureSelection;
 using MagoloRuleExtraction.Sections.Forward;
 using MagoloRuleExtraction.Sections.RuleExtraction;
 using MagoloRuleExtraction.Sections.Validation;
+using System.Data;
 
 namespace MagoloRuleExtraction
 {
     public partial class Main : Form
     {
-        #region Private Properties
+        #region Properties
 
+        public DataTable DataTableResult;
         private int CurrentIndex = -1;
 
         #endregion
@@ -24,8 +26,7 @@ namespace MagoloRuleExtraction
 
         private void dataToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            LoadControlIntoMain(new DataUC());
-
+            LoadControlIntoMain(new DataUC(this));
         }
 
         private void featureSelectionToolStripMenuItem_Click(object sender, EventArgs e)
