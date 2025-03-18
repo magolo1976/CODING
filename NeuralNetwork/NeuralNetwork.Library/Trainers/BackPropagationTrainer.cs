@@ -10,10 +10,8 @@ namespace NeuralNetwork.Library.Trainers
         public static double ApplyBackPropagation(INeuralNetwork netwotrk, 
             double[] inputs, 
             double[] targets, 
-            double learningRate, 
-            Func<double[], double[]> predictDelegate)
+            double learningRate)
         {
-            double[] Output = predictDelegate(inputs);
             double Loss = 0.0;
 
             for(int i=0; i < netwotrk.OutputLayer.Length; i++)

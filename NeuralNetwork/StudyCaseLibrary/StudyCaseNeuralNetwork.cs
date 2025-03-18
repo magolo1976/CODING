@@ -3,11 +3,15 @@ using NeuralNetwork.Library.ActivationFunctions;
 using NeuralNetwork.Library.Implementations;
 using NeuralNetwork.Library.Initializers;
 using NeuralNetwork.Library.Trainers;
+using StudyCaseLibrary.Models;
 
-namespace ConsoleApp.StudyCase
+namespace StudyCaseLibrary
 {
     public class StudyCaseNeuralNetwork : NeuralNetworkBase, INeuralNetwork
     {
+        public event Action<OnTrainingEventArgs> OnTrainingEvent;
+        public event Action<int, double[]> OnPredictionEvent;
+
         public StudyCaseNeuralNetwork()
         {
             HiddenLayerActivationFunction = new SigmoidActivationFunction();
@@ -25,7 +29,7 @@ namespace ConsoleApp.StudyCase
         public override double[] Predict(double[] inputs)
         {
             int InputIndex = 0;
-            foreach(var Dentrite in InputDentrites)
+            foreach (var Dentrite in InputDentrites)
             {
                 Dentrite.ReceiveInputValue(inputs[InputIndex++]);
             }
@@ -36,24 +40,30 @@ namespace ConsoleApp.StudyCase
         }
 
         public override void Train(
-            double[][] trainingData, 
-            double[][] targets, 
-            int epochs, 
+            double[][] trainingData,
+            double[][] targets,
+            int epochs,
             double learningRate)
         {
-            for(int Epoch = 0; Epoch < epochs; Epoch++)
+            for (int Epoch = 0; Epoch < epochs; Epoch++)
             {
                 double TotalLoss = 0.0;
 
                 for (int i = 0; i < trainingData.Length; i++)
                 {
+                    // Forward Propagation
+                    double[] Output = Predict(trainingData[i]);
+                    OnPredictionEvent?.Invoke(i, Output);
+
                     TotalLoss += BackPropagationTrainer.ApplyBackPropagation(
                         this, trainingData[i], targets[i], learningRate
                         );
                 }
 
                 double Mse = TotalLoss / trainingData.Length;
-                Console.WriteLine($"Epoch {Epoch + 1}/{epochs} - Loss (MSE): {Mse:F6}");
+
+                OnTrainingEvent?.Invoke(new OnTrainingEventArgs(
+                    epochs, Epoch+1, Mse));
             }
         }
     }
