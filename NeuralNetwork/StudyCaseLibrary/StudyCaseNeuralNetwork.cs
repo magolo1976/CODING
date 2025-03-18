@@ -20,6 +20,14 @@ namespace StudyCaseLibrary
             CreateNeuralNetwork(2, [8], 1);
         }
 
+        public StudyCaseNeuralNetwork(string filePath)
+        {
+            HiddenLayerActivationFunction = new SigmoidActivationFunction();
+            OutputLayerActivationFunction = new SigmoidActivationFunction();
+
+            LoadModel(filePath);
+        }
+
         protected override void Initialize()
         {
             // Metodo que calcula la inicialización de los pesos

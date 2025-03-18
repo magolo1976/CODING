@@ -1,8 +1,10 @@
-﻿using ScottPlot.Plottables;
+﻿using Microsoft.Win32;
+using ScottPlot.Plottables;
 using StudyCaseLibrary;
 using StudyCaseLibrary.Models;
 using System.Drawing;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace WpfApp;
 
@@ -13,35 +15,103 @@ public partial class MainWindow : Window
 {
     private Scatter[] PlotViewScatters;
 
+    private DispatcherTimer Timer;
+
+    private StudyCase StudyCase;
+
     public MainWindow()
     {
         InitializeComponent();
 
-        PlotView.Plot.Axes.SetLimits(0, 600, 0, 600);
+        InitializePlotView();
+
+        InitializeTimer(5);
     }
 
     private void btnTrain_Click(object sender, RoutedEventArgs e)
     {
-        var StudyCase = new StudyCaseNeuralNetworkExample();
+        StudyCase = new StudyCase();
         StudyCase.OnGetTrainingDataEvent += StudyCase_OnGetTrainingDataEvent;
         StudyCase.OnTrainingEvent += StudyCase_OnTrainingEvent;
         StudyCase.OnPredictionEvent += StudyCase_OnPredictionEvent;
 
-        Task.Run(() => StudyCase.ExecuteExample());
+        int Epochs = int.Parse(TxtEpochs.Text);
+        double LearningRates = double.Parse(TxtLearningRate.Text);
+
+        Task.Run(() => StudyCase.Train(Epochs, LearningRates));
+    }
+
+    private void btnTest_Click(object sender, RoutedEventArgs e)
+    {
+        var Result = StudyCase.Test();
+
+        WriteLine($"Total predictions: {Result.TotalPrediction}");
+        WriteLine($"Correct predictions: {Result.CorrectPredictions}");
+        WriteLine($"Accuracy: { Result.Accuracy}%");
+    }
+
+    private void btnPredict_Click(object sender, RoutedEventArgs e)
+    {
+        var Values = TxtValues.Text.Split(",", StringSplitOptions.TrimEntries);
+
+        double Study = StudyCase.NormalizeDateTime(DateTime.Parse(Values[0]));
+        double Sleep = StudyCase.NormalizeDateTime(DateTime.Parse(Values[1]));
+
+        double Predicted = StudyCase.Predict(Study, Sleep);
+
+        string Text = $"{(Predicted > 0.5 ? "Aprobado" : "Suspenso")} ({Predicted:f6})";
+
+        WriteLine(Text);
+
+        var Scatter = PlotView.Plot.Add.Scatter(
+            Study * 595, Sleep * 595);
+        Scatter.LineColor = ScottPlot.Color.FromColor(Color.DarkBlue);
+        Scatter.MarkerSize = 7;
+
+        PlotView.Refresh();
+    }
+    
+    private void btnSavemodel_Click(object sender, RoutedEventArgs e)
+    {
+        SaveFileDialog dlg = new SaveFileDialog
+        {
+            Title = "Save model",
+            Filter = "Models (*.json)|*.json",
+            FileName = "StudyModel",
+            DefaultExt = ".json"
+        };
+
+        if (dlg.ShowDialog() == true)
+        {
+            StudyCase.SaveModel(dlg.FileName);
+        }
+    }
+
+    private void btnLoadmodel_Click(object sender, RoutedEventArgs e)
+    {
+        OpenFileDialog dlg = new OpenFileDialog
+        {
+            Title = "Load model",
+            Filter = "Models (*.json)|*.json",
+            FileName = "StudyModel",
+            DefaultExt = ".json",
+            Multiselect = false
+        };
+
+        if (dlg.ShowDialog() == true)
+        {
+            StudyCase.LoadModel(dlg.FileName);
+
+            InitializePlotView();
+        }
     }
 
     private void StudyCase_OnPredictionEvent(int index, double[] prediction)
     {
-        Dispatcher.Invoke(() =>
-        {
-            var Scatter = PlotViewScatters[index];
-            Scatter.Color = ScottPlot.Color.FromColor(
-                prediction[0] > .5 ? Color.Green : Color.Red
-                );
-
-            if (index % 3500 == 0)
-                PlotView.Refresh();
-        });
+        var Scatter = PlotViewScatters[index];
+        Scatter.Color = ScottPlot.Color.FromColor(
+            prediction[0] > .5 ? Color.Green : Color.Red
+            );
     }
 
     private void StudyCase_OnTrainingEvent(OnTrainingEventArgs args)
@@ -71,14 +141,13 @@ public partial class MainWindow : Window
                 PlotViewScatters[i] = Scatter;
             }
 
+            //var Line = PlotView.Plot.Add.Line(235, 415, 235, 600);
+            //Line.Color = ScottPlot.Color.FromColor(Color.Orange);
+            //Line.LineWidth = 5;
 
-            var Line = PlotView.Plot.Add.Line(235, 415, 235, 600);
-            Line.Color = ScottPlot.Color.FromColor(Color.Orange);
-            Line.LineWidth = 5;
-
-            Line = PlotView.Plot.Add.Line(235, 415, 600, 415);
-            Line.Color = ScottPlot.Color.FromColor(Color.Orange);
-            Line.LineWidth = 5;
+            //Line = PlotView.Plot.Add.Line(235, 415, 600, 415);
+            //Line.Color = ScottPlot.Color.FromColor(Color.Orange);
+            //Line.LineWidth = 5;
 
             PlotView.Refresh();
         });
@@ -90,4 +159,35 @@ public partial class MainWindow : Window
         PlotView.Width = Size;
         PlotView.Height = Size;
     }
+
+    private void InitializeTimer(int seconds)
+    {
+        Timer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(seconds)
+        };
+
+        Timer.Tick += (s, e) =>
+        {
+            Dispatcher.Invoke(() => PlotView.Refresh());
+        };
+
+        Timer.Start();
+    }
+
+    private void InitializePlotView()
+    {
+        PlotView.Plot.Axes.SetLimits(0, 600, 0, 600);
+        PlotView.Plot.Clear();
+        PlotView.Refresh();
+    }
+
+    private void Write(string text)
+    {
+        ConsoleTextBox.AppendText(text);
+        ConsoleTextBox.ScrollToEnd();
+    }
+
+    private void WriteLine(string text) => Write($"{text}\n");
+
 }

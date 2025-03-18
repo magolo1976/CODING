@@ -6,7 +6,7 @@
         xmlns:scott="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
         xmlns:local="clr-namespace:WpfApp"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800"
+        Title="MainWindow" Height="808" Width="737"
         SizeChanged="Window_SizeChanged">
     <Grid>
         <Grid.RowDefinitions>
@@ -16,7 +16,16 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <Button x:Name="btnTrain" Content="Train" Padding="5" Margin="10" Click="btnTrain_Click" />
+            <Label>Epochs:</Label>
+            <TextBox x:Name="TxtEpochs" Margin="2" Width="40" VerticalContentAlignment="Center" Text="1000" />
+            <Label>Learning Rates:</Label>
+            <TextBox x:Name="TxtLearningRate" Margin="2" Width="40" VerticalContentAlignment="Center" Text="0,25" />
+            <Button x:Name="btnTrain" Content="Train" Padding="5" Margin="2" Click="btnTrain_Click" />
+            <Button x:Name="btnTest" Content="Test" Padding="5" Margin="2" Click="btnTest_Click" />
+            <TextBox x:Name="TxtValues" Margin="40,2,5,2" Width="100" VerticalContentAlignment="Center" Text="06:30, 08:15" />
+            <Button x:Name="btnPredict" Content="Predict" Padding="5" Margin="2" Click="btnPredict_Click" />
+            <Button x:Name="btnSavemodel" Content="Save model" Padding="5" Margin="40,2,2,2" Click="btnSavemodel_Click" />
+            <Button x:Name="btnLoadmodel" Content="Load model" Padding="5" Margin="2" Click="btnLoadmodel_Click" />
         </StackPanel>
 
         <Grid x:Name="PlotViewGrid" Grid.Row="1">
