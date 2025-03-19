@@ -12,7 +12,7 @@ namespace MagoloRuleExtraction.Classes
         /// <param name="trainReturns">Lista de retornos del conjunto de entrenamiento</param>
         /// <param name="testReturns">Lista de retornos del conjunto de prueba</param>
         /// <returns>Una tupla con el PlotModel, el estadístico KS y el p-valor</returns>
-        public static (PlotModel plotModel, double ksStatistic, double pValue) GetPlot(List<double> trainReturns, List<double> testReturns)
+        public static (PlotModel plotModel, double ksStatistic, double pValue) DoWork(List<double> trainReturns, List<double> testReturns)
         {
             // Realizar test KS
             var (ksStatistic, pValue) = CalculateKsTest(trainReturns, testReturns);

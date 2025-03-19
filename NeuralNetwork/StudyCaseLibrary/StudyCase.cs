@@ -14,9 +14,9 @@ namespace StudyCaseLibrary
         IEnumerable<StudyData> TestData;
         StudyCaseNeuralNetwork Network;
 
-        public void Train(int epochs, double learningRate)
+        public void Train(int epochs, double learningRate, string filePath)
         {
-            Data ??= GetFileData(); // Equivalenta a: Data = Data ?? GetFileData();
+            Data ??= GetFileData(filePath); // Equivalenta a: Data = Data ?? GetFileData();
 
             (TrainingData, TestData) = GetTrainAndTestData(Data);
 
@@ -98,11 +98,11 @@ namespace StudyCaseLibrary
             return (TrainingData, TestData);
         }
 
-        private static StudyData[] GetFileData()
+        private static StudyData[] GetFileData(string filePath)
         {
-            string FileName = "C:\\MAGOLO\\gitCODING\\NeuralNetwork\\StudyCaseLibrary\\Assets\\StudyData2.csv";
+            //string FileName = "C:\\MAGOLO\\gitCODING\\NeuralNetwork\\StudyCaseLibrary\\Assets\\StudyData2.csv";
 
-            var RawData = CsvReader.Read(FileName);
+            var RawData = CsvReader.Read(filePath);
 
             List<StudyData> Data = new();
             foreach(var Item in RawData)

@@ -15,6 +15,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudyCaseLibrary", "StudyCa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfApp", "WpfApp\WpfApp.csproj", "{38D6A495-922E-4CB8-8613-4A6914A110F0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarketPrediction", "MarketPrediction\MarketPrediction.csproj", "{B309F191-675B-457D-B34E-ED00D05E7B69}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Applications", "Applications", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,9 +49,16 @@ Global
 		{38D6A495-922E-4CB8-8613-4A6914A110F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{38D6A495-922E-4CB8-8613-4A6914A110F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{38D6A495-922E-4CB8-8613-4A6914A110F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B309F191-675B-457D-B34E-ED00D05E7B69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B309F191-675B-457D-B34E-ED00D05E7B69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B309F191-675B-457D-B34E-ED00D05E7B69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B309F191-675B-457D-B34E-ED00D05E7B69}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B309F191-675B-457D-B34E-ED00D05E7B69} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8228D7C6-7720-49DD-900E-55F69C0F8999}

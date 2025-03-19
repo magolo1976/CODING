@@ -7,7 +7,7 @@ namespace MagoloRuleExtraction.Classes
         /// <summary>
         /// Crea una tabla con las estadísticas de los retornos
         /// </summary>
-        public static DataTable GetReturnsTable(IEnumerable<double> trainReturns, IEnumerable<double> testReturns, IEnumerable<double> forwardReturns)
+        public static DataTable DoWork(IEnumerable<double> trainReturns, IEnumerable<double> testReturns, IEnumerable<double> forwardReturns)
         {
             var trainStats = CalculateStats(trainReturns);
             var testStats = CalculateStats(testReturns);

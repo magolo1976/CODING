@@ -17,7 +17,7 @@ public partial class MainWindow : Window
 
     private DispatcherTimer Timer;
 
-    private StudyCase StudyCase;
+    private StudyCase StudyCase = new StudyCase();
 
     public MainWindow()
     {
@@ -30,7 +30,6 @@ public partial class MainWindow : Window
 
     private void btnTrain_Click(object sender, RoutedEventArgs e)
     {
-        StudyCase = new StudyCase();
         StudyCase.OnGetTrainingDataEvent += StudyCase_OnGetTrainingDataEvent;
         StudyCase.OnTrainingEvent += StudyCase_OnTrainingEvent;
         StudyCase.OnPredictionEvent += StudyCase_OnPredictionEvent;
@@ -38,7 +37,9 @@ public partial class MainWindow : Window
         int Epochs = int.Parse(TxtEpochs.Text);
         double LearningRates = double.Parse(TxtLearningRate.Text);
 
-        Task.Run(() => StudyCase.Train(Epochs, LearningRates));
+        string filePath = "C:\\MAGOLO\\gitCODING\\NeuralNetwork\\StudyCaseLibrary\\Assets\\StudyData2.csv";
+
+        Task.Run(() => StudyCase.Train(Epochs, LearningRates, filePath));
     }
 
     private void btnTest_Click(object sender, RoutedEventArgs e)

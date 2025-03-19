@@ -7,7 +7,7 @@ namespace MagoloRuleExtraction.Classes
 {
     public class Plot_Price_Evolution
     {
-        public static PlotModel GetPlot(
+        public static PlotModel DoWork(
                                     DataTable dataTable,
                                     string dateColumnName,
                                     DateTime trainStart,

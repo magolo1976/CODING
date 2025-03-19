@@ -4,7 +4,7 @@ namespace MagoloRuleExtraction.Classes
 {
     public class Calculate_Target
     {
-        public static DataTable Calculate(DataTable dt)
+        public static DataTable DoWork(DataTable dt)
         {
             // Verificar que el DataTable tenga las columnas necesarias
             if (!dt.Columns.Contains("Open"))

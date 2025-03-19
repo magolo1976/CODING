@@ -30,11 +30,13 @@
         {
             btnStatistic = new Button();
             btnConclusiones = new Button();
+            pictureWaiting = new PictureBox();
+            ((System.ComponentModel.ISupportInitialize)pictureWaiting).BeginInit();
             SuspendLayout();
             // 
             // btnStatistic
             // 
-            btnStatistic.BackColor = SystemColors.ActiveCaption;
+            btnStatistic.BackColor = Color.LightSkyBlue;
             btnStatistic.Location = new Point(1077, 66);
             btnStatistic.Name = "btnStatistic";
             btnStatistic.Size = new Size(75, 23);
@@ -46,7 +48,7 @@
             // 
             // btnConclusiones
             // 
-            btnConclusiones.BackColor = Color.FromArgb(255, 192, 255);
+            btnConclusiones.BackColor = Color.HotPink;
             btnConclusiones.Location = new Point(1158, 66);
             btnConclusiones.Name = "btnConclusiones";
             btnConclusiones.Size = new Size(75, 23);
@@ -56,14 +58,26 @@
             btnConclusiones.Visible = false;
             btnConclusiones.Click += btnConclusiones_Click;
             // 
+            // pictureWaiting
+            // 
+            pictureWaiting.Image = Properties.Resources.bean;
+            pictureWaiting.Location = new Point(363, 207);
+            pictureWaiting.Name = "pictureWaiting";
+            pictureWaiting.Size = new Size(499, 281);
+            pictureWaiting.TabIndex = 2;
+            pictureWaiting.TabStop = false;
+            pictureWaiting.Visible = false;
+            // 
             // DataUC
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
+            Controls.Add(pictureWaiting);
             Controls.Add(btnConclusiones);
             Controls.Add(btnStatistic);
             Name = "DataUC";
             Size = new Size(1246, 770);
+            ((System.ComponentModel.ISupportInitialize)pictureWaiting).EndInit();
             ResumeLayout(false);
         }
 
@@ -71,5 +85,6 @@
 
         private Button btnStatistic;
         private Button btnConclusiones;
+        private PictureBox pictureWaiting;
     }
 }

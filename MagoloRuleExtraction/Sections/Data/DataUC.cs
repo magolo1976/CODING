@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Data;
+﻿using System.Data;
 using System.Globalization;
 using System.Text;
 using MagoloRuleExtraction.Classes;
@@ -45,7 +44,7 @@ namespace MagoloRuleExtraction.Sections.Data
             Button btnUpload = new Button
             {
                 Text = "Seleccionar archivo CSV",
-                BackColor = SystemColors.ActiveCaption,
+                BackColor = Color.LightSkyBlue,
                 Width = 200,
                 Height = 30
             };
@@ -178,7 +177,7 @@ namespace MagoloRuleExtraction.Sections.Data
             Button btnProcess = new Button
             {
                 Text = "Procesar datos",
-                BackColor = SystemColors.ActiveCaption,
+                BackColor = Color.LightSkyBlue,
                 Name = "btnProcess",
                 Width = 200,
                 Height = 30,
@@ -305,13 +304,11 @@ namespace MagoloRuleExtraction.Sections.Data
                 btnStatistic.Visible = false;
                 btnConclusiones.Visible = false;
 
-                Label lblFileInfo = Controls.Find("lblFileInfo", true).FirstOrDefault() as Label;
-                if (lblFileInfo != null)
-                    lblFileInfo.Text = "Procesando...";
+                //pictureWaiting.Visible = true;
 
                 LoadAndProcessCsv(openFileDialog.FileName);
 
-                BtnProcess_Click(null, null);
+                BtnProcess_Click(null, null);              
             }
         }
 
@@ -327,6 +324,8 @@ namespace MagoloRuleExtraction.Sections.Data
 
             btnStatistic.Visible = true;
             btnConclusiones.Visible = true;
+
+            //pictureWaiting.Visible = false;
         }
 
         private void btnStatistic_Click(object sender, EventArgs e)
@@ -356,7 +355,7 @@ namespace MagoloRuleExtraction.Sections.Data
                 _dataTable = ReadCsvFile(filePath, ref rybText);
 
                 // Calcular el Target
-                _dataTable = Calculate_Target.Calculate(_dataTable);
+                _dataTable = Calculate_Target.DoWork(_dataTable);
 
                 // Mostrar las 100 primeras filas del DataTable en el DataGridView
                 RichTextBox rtb = Controls.Find("rtbData", true).FirstOrDefault() as RichTextBox;
@@ -735,6 +734,11 @@ namespace MagoloRuleExtraction.Sections.Data
                 _testReturns = new List<double>();
                 _forwardReturns = new List<double>();
 
+                // Creación de DataTables con los diferentes datos según periodos
+                DataTable dtTrain = _dataTable.Clone();
+                DataTable dtTest = _dataTable.Clone();
+                DataTable dtForward = _dataTable.Clone();
+
                 // Procesar cada fila para crear las máscaras
                 foreach (DataRow row in _dataTable.Rows)
                 {
@@ -755,16 +759,22 @@ namespace MagoloRuleExtraction.Sections.Data
                         if (isInTrain && row["Target"] != DBNull.Value)
                         {
                             _trainReturns.Add(Convert.ToDouble(row["Target"]));
+
+                            dtTrain.ImportRow(row);
                         }
 
                         if (isInTest && row["Target"] != DBNull.Value)
                         {
                             _testReturns.Add(Convert.ToDouble(row["Target"]));
+
+                            dtTest.ImportRow(row);
                         }
 
                         if (isInForward && row["Target"] != DBNull.Value)
                         {
                             _forwardReturns.Add(Convert.ToDouble(row["Target"]));
+                         
+                            dtForward.ImportRow(row);
                         }
                     }
                 }
@@ -782,6 +792,9 @@ namespace MagoloRuleExtraction.Sections.Data
 
                 // Aquí se podrían realizar más acciones con los datos procesados
                 // como guardar en variables de sesión, exportar, etc.
+                _main.DT_Train      = dtTrain;
+                _main.DT_Test       = dtTest;
+                _main.DT_Forward    = dtForward;
             }
             catch (Exception ex)
             {
@@ -813,7 +826,7 @@ namespace MagoloRuleExtraction.Sections.Data
             DateTime forwardStart = dtpForwardStart.Value;
             DateTime forwardEnd = dtpForwardEnd.Value;
 
-            plotView.Model = Plot_Price_Evolution.GetPlot(
+            plotView.Model = Plot_Price_Evolution.DoWork(
                             _dataTable,
                             dateColumnName,
                             trainStart,
@@ -830,7 +843,7 @@ namespace MagoloRuleExtraction.Sections.Data
             if (plotView == null || _testReturns.Count == 0 || _trainReturns.Count == 0 || _forwardReturns.Count == 0)
                 return;
 
-            (PlotModel plotModel, double ksStatistic, _pValue) = Plot_KS_Test.GetPlot(_trainReturns, _testReturns);
+            (PlotModel plotModel, double ksStatistic, _pValue) = Plot_KS_Test.DoWork(_trainReturns, _testReturns);
 
             plotView.Model = plotModel;
 

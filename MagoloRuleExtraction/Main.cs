@@ -13,6 +13,9 @@ namespace MagoloRuleExtraction
         #region Properties
 
         public DataTable DataTableResult;
+        public DataTable DT_Train;
+        public DataTable DT_Test;
+        public DataTable DT_Forward;
         private int CurrentIndex = -1;
 
         #endregion
@@ -27,11 +30,12 @@ namespace MagoloRuleExtraction
         private void dataToolStripMenuItem_Click(object sender, EventArgs e)
         {
             LoadControlIntoMain(new DataUC(this));
+
         }
 
         private void featureSelectionToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            LoadControlIntoMain(new FeatureSelectionUC());
+            LoadControlIntoMain(new FeatureSelectionUC(DT_Train, "Date"));
 
         }
 

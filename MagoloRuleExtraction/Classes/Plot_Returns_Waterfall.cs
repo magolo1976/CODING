@@ -87,8 +87,8 @@ namespace MagoloRuleExtraction.Classes
             var posAnnotation = new TextAnnotation
             {
                 Text = $"({posPct:F1} % del volumen)\n+{positiveReturns:F2} %",
-                TextPosition = new DataPoint(positiveReturns + 2, 2),
-                TextHorizontalAlignment = HorizontalAlignment.Left,
+                TextPosition = new DataPoint(positiveReturns/3, 2),
+                TextHorizontalAlignment = HorizontalAlignment.Right,
                 TextVerticalAlignment = VerticalAlignment.Middle,
                 StrokeThickness = 0
             };
@@ -97,8 +97,8 @@ namespace MagoloRuleExtraction.Classes
             var negAnnotation = new TextAnnotation
             {
                 Text = $"({negPct:F1} % del volumen)\n{negativeReturns:F2} %",
-                TextPosition = new DataPoint(negativeReturns - 2, 1),
-                TextHorizontalAlignment = HorizontalAlignment.Right,
+                TextPosition = new DataPoint(negativeReturns/3, 1),
+                TextHorizontalAlignment = HorizontalAlignment.Left,
                 TextVerticalAlignment = VerticalAlignment.Middle,
                 StrokeThickness = 0
             };

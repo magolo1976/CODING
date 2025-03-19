@@ -30,7 +30,7 @@ namespace MagoloRuleExtraction.Sections.Data
         public void UpdateReturnsStatsTable(List<double> trainReturns, List<double> testReturns, List<double> forwardReturns)
         {
             // Crear la tabla
-            StatsTable = Create_Returns_Stats_Table.GetReturnsTable(trainReturns, testReturns, forwardReturns);
+            StatsTable = Create_Returns_Stats_Table.DoWork(trainReturns, testReturns, forwardReturns);
 
             // Asignar al DataGridView
             dgvReturnsStats.DataSource = StatsTable;

@@ -40,17 +40,16 @@
             // 
             // menuStrip1
             // 
-            menuStrip1.BackColor = SystemColors.ActiveCaption;
+            menuStrip1.BackColor = Color.HotPink;
             menuStrip1.Items.AddRange(new ToolStripItem[] { dataToolStripMenuItem, featureSelectionToolStripMenuItem, ruleExtractionToolStripMenuItem, validationToolStripMenuItem, forwardToolStripMenuItem, backtestToolStripMenuItem });
             menuStrip1.Location = new Point(0, 0);
             menuStrip1.Name = "menuStrip1";
-            menuStrip1.Size = new Size(800, 24);
+            menuStrip1.Size = new Size(694, 24);
             menuStrip1.TabIndex = 0;
             menuStrip1.Text = "menuStrip1";
             // 
             // dataToolStripMenuItem
             // 
-            dataToolStripMenuItem.BackColor = SystemColors.ActiveCaption;
             dataToolStripMenuItem.Name = "dataToolStripMenuItem";
             dataToolStripMenuItem.Size = new Size(43, 20);
             dataToolStripMenuItem.Text = "Data";
@@ -95,8 +94,11 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            BackgroundImage = Properties.Resources.bg2;
+            BackgroundImageLayout = ImageLayout.Center;
+            ClientSize = new Size(694, 637);
             Controls.Add(menuStrip1);
+            DoubleBuffered = true;
             FormBorderStyle = FormBorderStyle.FixedToolWindow;
             MainMenuStrip = menuStrip1;
             Name = "Main";
