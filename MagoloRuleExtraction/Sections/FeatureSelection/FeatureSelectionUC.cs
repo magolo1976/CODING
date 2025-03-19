@@ -22,6 +22,7 @@ namespace MagoloRuleExtraction.Sections.FeatureSelection
 
             _trainData = dataFrame;
             _dateColumn = dateColumn;
+            cmbSide.SelectedIndex = 0;
 
             _analysisManager = new Analyze_All_Features();
         }
