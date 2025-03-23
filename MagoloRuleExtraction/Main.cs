@@ -4,7 +4,6 @@ using MagoloRuleExtraction.Sections.FeatureSelection;
 using MagoloRuleExtraction.Sections.Forward;
 using MagoloRuleExtraction.Sections.RuleExtraction;
 using MagoloRuleExtraction.Sections.Validation;
-using System.Data;
 
 namespace MagoloRuleExtraction
 {
@@ -12,11 +11,20 @@ namespace MagoloRuleExtraction
     {
         #region Properties
 
-        public DataTable DataTableResult;
-        public DataTable DT_Train;
-        public DataTable DT_Test;
-        public DataTable DT_Forward;
         private int CurrentIndex = -1;
+        private DataUC _data = null;
+        private FeatureSelectionUC _featureSelection = null;
+        private RuleExtractionUC _ruleExtraction = null;
+        private ValidationUC _validation= null;
+        private ForwardUC _forward = null;
+        private BacktestUC _backtest = null;
+
+        private DataUC _DataUC { get { if (_data == null) { _data = new DataUC(); }; return _data; } set { _data = value; } }
+        private FeatureSelectionUC _FeatureSelectionUC { get { if (_featureSelection == null) { _featureSelection = new FeatureSelectionUC(); }; return _featureSelection; } set { _featureSelection = value; } }
+        private RuleExtractionUC _RuleExtractionUC { get { if (_ruleExtraction == null) { _ruleExtraction = new RuleExtractionUC(); }; return _ruleExtraction; } set { _ruleExtraction = value; } }
+        private ValidationUC _ValidationUC { get { if (_validation == null) { _validation = new ValidationUC(); }; return _validation; } set { _validation = value; } }
+        private ForwardUC _ForwardUC { get { if (_forward == null) { _forward = new ForwardUC(); }; return _forward; } set { _forward = value; } }
+        private BacktestUC _BacktestUC { get { if (_backtest == null) { _backtest = new BacktestUC(); }; return _backtest; } set { _backtest = value; } }
 
         #endregion
 
@@ -29,37 +37,50 @@ namespace MagoloRuleExtraction
 
         private void dataToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            LoadControlIntoMain(new DataUC(this));
+            LoadControlIntoMain(_DataUC);
 
         }
 
         private void featureSelectionToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            LoadControlIntoMain(new FeatureSelectionUC(DT_Train, "Date"));
+            _FeatureSelectionUC.TrainData = _DataUC.DataTable_Train;
+            _FeatureSelectionUC.DateColumn = _DataUC.DateColumnName;
+
+            LoadControlIntoMain(_FeatureSelectionUC);
 
         }
 
         private void ruleExtractionToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            LoadControlIntoMain(new RuleExtractionUC());
+            _RuleExtractionUC = new RuleExtractionUC();
+            _RuleExtractionUC.Initialize(
+                _DataUC.DataTableResult,
+                _DataUC.TrainReturns,
+                _FeatureSelectionUC.PrimaryRules,
+                _DataUC.DateColumnName,
+                _FeatureSelectionUC.SideSelected,
+                _DataUC.MaskTrain
+                );
+
+            LoadControlIntoMain(_RuleExtractionUC);
 
         }
 
         private void validationToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            LoadControlIntoMain(new ValidationUC());
+            LoadControlIntoMain(_ValidationUC);
 
         }
 
         private void forwardToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            LoadControlIntoMain(new ForwardUC());
+            LoadControlIntoMain(_ForwardUC);
 
         }
 
         private void backtestToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            LoadControlIntoMain(new BacktestUC());
+            LoadControlIntoMain(_BacktestUC);
 
         }
 

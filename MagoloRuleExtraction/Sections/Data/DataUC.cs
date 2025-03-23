@@ -9,26 +9,31 @@ namespace MagoloRuleExtraction.Sections.Data
 {
     public partial class DataUC : UserControl
     {
+        #region Public properties
+
+        public List<double> TrainReturns;
+        public List<double> TestReturns;
+        public List<double> ForwardReturns;
+        public DataTable DataTableResult;
+        public DataTable DataTable_Train;
+        public DataTable DataTable_Test;
+        public DataTable DataTable_Forward;
+        public string DateColumnName;
+        public List<bool> MaskTrain;
+        public List<bool> MaskTest;
+        public List<bool> MaskForward;
+
+        #endregion
+
         // Propiedades para almacenar los datos y máscaras
-        private Main _main;
-        private DataTable _dataTable;
-        private List<bool> _maskTrain;
-        private List<bool> _maskTest;
-        private List<bool> _maskForward;
-        private List<double> _trainReturns;
-        private List<double> _testReturns;
-        private List<double> _forwardReturns;
-        private string _dateColumnName;
         private double _pValue;
         private double _totalReturns;
 
-        public DataUC(Main main)
+        public DataUC()
         {
             InitializeComponent();
 
             InitializeControls();
-
-            _main = main; 
         }
 
         #region Initialize Controls
@@ -330,7 +335,7 @@ namespace MagoloRuleExtraction.Sections.Data
 
         private void btnStatistic_Click(object sender, EventArgs e)
         {
-            StatisticDataForm form = new StatisticDataForm(_trainReturns, _testReturns, _forwardReturns);
+            StatisticDataForm form = new StatisticDataForm(TrainReturns, TestReturns, ForwardReturns);
             form.ShowDialog();
 
             DataTable StatsTable = form.StatsTable;
@@ -352,33 +357,33 @@ namespace MagoloRuleExtraction.Sections.Data
                 string rybText = string.Empty;
 
                 // Leer el archivo CSV
-                _dataTable = ReadCsvFile(filePath, ref rybText);
+                DataTableResult = ReadCsvFile(filePath, ref rybText);
 
                 // Calcular el Target
-                _dataTable = Calculate_Target.DoWork(_dataTable);
+                DataTableResult = Calculate_Target.DoWork(DataTableResult);
 
                 // Mostrar las 100 primeras filas del DataTable en el DataGridView
                 RichTextBox rtb = Controls.Find("rtbData", true).FirstOrDefault() as RichTextBox;
                 if (rtb != null)
                 {
-                    DataTable dtPrimeras100 = _dataTable.AsEnumerable()
+                    DataTable dtPrimeras100 = DataTableResult.AsEnumerable()
                                                         .Take(50)
                                                         .CopyToDataTable();
                     rtb.Text = MostrarDataTableEnRichTextBox(dtPrimeras100);
                 }
 
                 // Detectar columna de fecha
-                _dateColumnName = DetectDateColumn(_dataTable);
+                DateColumnName = DetectDateColumn(DataTableResult);
 
-                if (string.IsNullOrEmpty(_dateColumnName))
+                if (string.IsNullOrEmpty(DateColumnName))
                 {
                     MessageBox.Show("No se encontró una columna de fecha. Por favor, asegúrate de que tu CSV tiene una columna de fecha.");
                     return;
                 }
 
                 // Obtener el rango de fechas
-                DateTime minDate = GetMinDate(_dataTable, _dateColumnName);
-                DateTime maxDate = GetMaxDate(_dataTable, _dateColumnName);
+                DateTime minDate = GetMinDate(DataTableResult, DateColumnName);
+                DateTime maxDate = GetMaxDate(DataTableResult, DateColumnName);
 
                 // Actualizar etiqueta con información del archivo
                 Label lblFileInfo = Controls.Find("lblFileInfo", true).FirstOrDefault() as Label;
@@ -393,8 +398,6 @@ namespace MagoloRuleExtraction.Sections.Data
                 // Habilitar los selectores de fecha y el botón de procesar
                 EnableDateControls(true);
 
-                // DataTable to Main
-                _main.DataTableResult = _dataTable;
             }
             catch (Exception ex)
             {
@@ -701,7 +704,7 @@ namespace MagoloRuleExtraction.Sections.Data
 
         private void ProcessDateRanges()
         {
-            if (_dataTable == null || string.IsNullOrEmpty(_dateColumnName))
+            if (DataTableResult == null || string.IsNullOrEmpty(DateColumnName))
             {
                 MessageBox.Show("No hay datos para procesar.");
                 return;
@@ -725,56 +728,56 @@ namespace MagoloRuleExtraction.Sections.Data
                 DateTime forwardEnd = dtpForwardEnd.Value;
 
                 // Crear máscaras
-                _maskTrain = new List<bool>();
-                _maskTest = new List<bool>();
-                _maskForward = new List<bool>();
+                MaskTrain = new List<bool>();
+                MaskTest = new List<bool>();
+                MaskForward = new List<bool>();
 
                 // Inicializar listas para almacenar resultados
-                _trainReturns = new List<double>();
-                _testReturns = new List<double>();
-                _forwardReturns = new List<double>();
+                TrainReturns = new List<double>();
+                TestReturns = new List<double>();
+                ForwardReturns = new List<double>();
 
                 // Creación de DataTables con los diferentes datos según periodos
-                DataTable dtTrain = _dataTable.Clone();
-                DataTable dtTest = _dataTable.Clone();
-                DataTable dtForward = _dataTable.Clone();
+                DataTable_Train = DataTableResult.Clone();
+                DataTable_Test = DataTableResult.Clone();
+                DataTable_Forward = DataTableResult.Clone();
 
                 // Procesar cada fila para crear las máscaras
-                foreach (DataRow row in _dataTable.Rows)
+                foreach (DataRow row in DataTableResult.Rows)
                 {
-                    if (row[_dateColumnName] != DBNull.Value)
+                    if (row[DateColumnName] != DBNull.Value)
                     {
-                        DateTime rowDate = Convert.ToDateTime(row[_dateColumnName]);
+                        DateTime rowDate = Convert.ToDateTime(row[DateColumnName]);
 
                         // Crear máscaras
                         bool isInTrain = rowDate >= trainStart && rowDate <= trainEnd;
                         bool isInTest = rowDate >= testStart && rowDate <= testEnd;
                         bool isInForward = rowDate >= forwardStart && rowDate <= forwardEnd;
 
-                        _maskTrain.Add(isInTrain);
-                        _maskTest.Add(isInTest);
-                        _maskForward.Add(isInForward);
+                        MaskTrain.Add(isInTrain);
+                        MaskTest.Add(isInTest);
+                        MaskForward.Add(isInForward);
 
                         // Recopilar retornos
                         if (isInTrain && row["Target"] != DBNull.Value)
                         {
-                            _trainReturns.Add(Convert.ToDouble(row["Target"]));
+                            TrainReturns.Add(Convert.ToDouble(row["Target"]));
 
-                            dtTrain.ImportRow(row);
+                            DataTable_Train.ImportRow(row);
                         }
 
                         if (isInTest && row["Target"] != DBNull.Value)
                         {
-                            _testReturns.Add(Convert.ToDouble(row["Target"]));
+                            TestReturns.Add(Convert.ToDouble(row["Target"]));
 
-                            dtTest.ImportRow(row);
+                            DataTable_Test.ImportRow(row);
                         }
 
                         if (isInForward && row["Target"] != DBNull.Value)
                         {
-                            _forwardReturns.Add(Convert.ToDouble(row["Target"]));
-                         
-                            dtForward.ImportRow(row);
+                            ForwardReturns.Add(Convert.ToDouble(row["Target"]));
+
+                            DataTable_Forward.ImportRow(row);
                         }
                     }
                 }
@@ -782,9 +785,9 @@ namespace MagoloRuleExtraction.Sections.Data
                 // Mostrar resultados
                 MessageBox.Show(
                     $"Procesamiento completado:\n" +
-                    $"- Datos de Train: {_trainReturns.Count} registros\n" +
-                    $"- Datos de Test: {_testReturns.Count} registros\n" +
-                    $"- Datos de Forward: {_forwardReturns.Count} registros",
+                    $"- Datos de Train: {TrainReturns.Count} registros\n" +
+                    $"- Datos de Test: {TestReturns.Count} registros\n" +
+                    $"- Datos de Forward: {ForwardReturns.Count} registros",
                     "Información",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information
@@ -792,9 +795,7 @@ namespace MagoloRuleExtraction.Sections.Data
 
                 // Aquí se podrían realizar más acciones con los datos procesados
                 // como guardar en variables de sesión, exportar, etc.
-                _main.DT_Train      = dtTrain;
-                _main.DT_Test       = dtTest;
-                _main.DT_Forward    = dtForward;
+
             }
             catch (Exception ex)
             {
@@ -809,7 +810,7 @@ namespace MagoloRuleExtraction.Sections.Data
         public void PlotPriceEvolution(string dateColumnName)
         {
             PlotView plotView = Controls.Find("plotView", true).FirstOrDefault() as PlotView;
-            if (plotView == null || _testReturns.Count == 0 || _trainReturns.Count == 0 || _forwardReturns.Count == 0)
+            if (plotView == null || TestReturns.Count == 0 || TrainReturns.Count == 0 || ForwardReturns.Count == 0)
                 return;
 
             DateTimePicker dtpTestStart = Controls.Find("testStart", true).FirstOrDefault() as DateTimePicker;
@@ -827,7 +828,7 @@ namespace MagoloRuleExtraction.Sections.Data
             DateTime forwardEnd = dtpForwardEnd.Value;
 
             plotView.Model = Plot_Price_Evolution.DoWork(
-                            _dataTable,
+                            DataTableResult,
                             dateColumnName,
                             trainStart,
                             trainEnd,
@@ -840,10 +841,10 @@ namespace MagoloRuleExtraction.Sections.Data
         private void PlotDistribucionesTrainTest()
         {
             PlotView plotView = Controls.Find("plotTrainTest", true).FirstOrDefault() as PlotView;
-            if (plotView == null || _testReturns.Count == 0 || _trainReturns.Count == 0 || _forwardReturns.Count == 0)
+            if (plotView == null || TestReturns.Count == 0 || TrainReturns.Count == 0 || ForwardReturns.Count == 0)
                 return;
 
-            (PlotModel plotModel, double ksStatistic, _pValue) = Plot_KS_Test.DoWork(_trainReturns, _testReturns);
+            (PlotModel plotModel, double ksStatistic, _pValue) = Plot_KS_Test.DoWork(TrainReturns, TestReturns);
 
             plotView.Model = plotModel;
 
@@ -867,10 +868,10 @@ namespace MagoloRuleExtraction.Sections.Data
         private void PlotMagnitudeOfReturnsTrainTest()
         {
             PlotView plotView = Controls.Find("plotMagnReturnsTrainTest", true).FirstOrDefault() as PlotView;
-            if (plotView == null || _testReturns.Count == 0 || _trainReturns.Count == 0 || _forwardReturns.Count == 0)
+            if (plotView == null || TestReturns.Count == 0 || TrainReturns.Count == 0 || ForwardReturns.Count == 0)
                 return;
 
-            List<double> trainTestReturns = _trainReturns.Concat(_testReturns).ToList();
+            List<double> trainTestReturns = TrainReturns.Concat(TestReturns).ToList();
 
             (plotView.Model, _totalReturns) = Plot_Returns_Waterfall.PlotReturns(trainTestReturns);
 
@@ -886,7 +887,7 @@ namespace MagoloRuleExtraction.Sections.Data
         /// </summary>
         public List<double> GetTrainReturns()
         {
-            return _trainReturns ?? new List<double>();
+            return TrainReturns ?? new List<double>();
         }
 
         /// <summary>
@@ -894,7 +895,7 @@ namespace MagoloRuleExtraction.Sections.Data
         /// </summary>
         public List<double> GetTestReturns()
         {
-            return _testReturns ?? new List<double>();
+            return TestReturns ?? new List<double>();
         }
 
         /// <summary>
@@ -902,7 +903,7 @@ namespace MagoloRuleExtraction.Sections.Data
         /// </summary>
         public List<double> GetForwardReturns()
         {
-            return _forwardReturns ?? new List<double>();
+            return ForwardReturns ?? new List<double>();
         }
 
         /// <summary>
@@ -910,7 +911,7 @@ namespace MagoloRuleExtraction.Sections.Data
         /// </summary>
         public DataTable GetProcessedData()
         {
-            return _dataTable;
+            return DataTableResult;
         }
 
         #endregion

@@ -7,21 +7,21 @@ namespace MagoloRuleExtraction.Sections.FeatureSelection
     public partial class FeatureSelectionUC: UserControl
     {
         // Estado de la sesión (equivalente a st.session_state)
-        private DataTable _trainData;
-        private string _dateColumn;
-        private bool[] _maskTrain; // Máscara para filtrar datos de entrenamiento
-        private Dictionary<string, Dictionary<string, object>> _primaryRules;
-        private string _side;
+        public DataTable TrainData = null;
+        public string DateColumn = string.Empty;
+        public DataTable FeaturesDataTable;
+        public string SideSelected { get { return cmbSide.SelectedItem.ToString(); } }
+        public Dictionary<string, Dictionary<string, object>> PrimaryRules;
+
+        //private bool[] _maskTrain; // Máscara para filtrar datos de entrenamiento
 
         // Componentes del análisis
         private readonly Analyze_All_Features _analysisManager;
 
-        public FeatureSelectionUC(DataTable dataFrame, string dateColumn)
+        public FeatureSelectionUC()
         {
             InitializeComponent();
 
-            _trainData = dataFrame;
-            _dateColumn = dateColumn;
             cmbSide.SelectedIndex = 0;
 
             _analysisManager = new Analyze_All_Features();
@@ -41,7 +41,7 @@ namespace MagoloRuleExtraction.Sections.FeatureSelection
         private void BtnAnalyze_Click(object sender, EventArgs e)
         {
             // Verificar si hay datos cargados
-            if (_trainData == null)
+            if (TrainData == null)
             {
                 this.lblMessage.Text = "Por favor, carga un archivo CSV primero.";
                 this.lblMessage.ForeColor = Color.Red;
@@ -60,7 +60,7 @@ namespace MagoloRuleExtraction.Sections.FeatureSelection
                 Application.DoEvents();
 
                 // Obtener parámetros
-                string side = this.cmbSide.SelectedItem.ToString();
+                string side = SideSelected;
                 double correlationThreshold = this.trkCorrelation.Value / 100.0;
 
                 //// Filtrar datos para entrenamiento
@@ -72,9 +72,9 @@ namespace MagoloRuleExtraction.Sections.FeatureSelection
                 {
                     // Analizar todas las features
                     var analysisResult = _analysisManager.DoWork(
-                        _trainData,
+                        TrainData,
                         "Target",
-                        _dateColumn,
+                        DateColumn,
                         side,
                         correlationThreshold
                     );
@@ -98,19 +98,17 @@ namespace MagoloRuleExtraction.Sections.FeatureSelection
 
                     // Obtener resultados
                     var result = (Tuple<DataTable, Dictionary<string, Dictionary<string, object>>>)args.Result;
-                    DataTable featuresDataTable = result.Item1;
-                    Dictionary<string, Dictionary<string, object>> rulesDict = result.Item2;
+                    FeaturesDataTable = result.Item1;
 
                     // Guardar reglas en el estado de la sesión
-                    _primaryRules = rulesDict;
-                    _side = side;
+                    PrimaryRules = result.Item2;
 
                     // Mostrar resultados
-                    if (featuresDataTable.Rows.Count > 0)
+                    if (FeaturesDataTable.Rows.Count > 0)
                     {
-                        this.lblMessage.Text = $"Features seleccionadas ({featuresDataTable.Rows.Count}) después de aplicar el filtro de correlación (umbral: {correlationThreshold})";
+                        this.lblMessage.Text = $"Features seleccionadas ({FeaturesDataTable.Rows.Count}) después de aplicar el filtro de correlación (umbral: {correlationThreshold})";
                         this.lblMessage.ForeColor = Color.Black;
-                        this.dgvResults.DataSource = featuresDataTable;
+                        this.dgvResults.DataSource = FeaturesDataTable;
                     }
                     else
                     {
@@ -156,31 +154,16 @@ namespace MagoloRuleExtraction.Sections.FeatureSelection
         /// <summary>
         /// Establece los datos para el análisis
         /// </summary>
-        public void SetData(DataTable dataFrame, string dateColumn, bool[] maskTrain)
+        public void SetData(DataTable dataFrame, string dateColumn)//, bool[] maskTrain)
         {
-            _trainData = dataFrame;
-            _dateColumn = dateColumn;
-            _maskTrain = maskTrain;
+            TrainData = dataFrame;
+            DateColumn = dateColumn;
+            //_maskTrain = maskTrain;
 
             // Restablecer mensaje
             this.lblMessage.Text = "Datos cargados correctamente. Listo para analizar.";
             this.lblMessage.ForeColor = Color.Green;
         }
 
-        /// <summary>
-        /// Obtiene las reglas primarias generadas por el análisis
-        /// </summary>
-        public Dictionary<string, Dictionary<string, object>> GetPrimaryRules()
-        {
-            return _primaryRules;
-        }
-
-        /// <summary>
-        /// Obtiene el lado (long/short) seleccionado
-        /// </summary>
-        public string GetSide()
-        {
-            return _side;
-        }
     }
 }
