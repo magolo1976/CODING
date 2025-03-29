@@ -150,7 +150,7 @@
             // cmbSide
             // 
             cmbSide.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbSide.Items.AddRange(new object[] { "Long", "Short" });
+            cmbSide.Items.AddRange(new object[] { "LONG", "SHORT" });
             cmbSide.Location = new Point(3, 23);
             cmbSide.Name = "cmbSide";
             cmbSide.Size = new Size(150, 23);

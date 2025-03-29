@@ -4,6 +4,7 @@ using MagoloRuleExtraction.Sections.FeatureSelection;
 using MagoloRuleExtraction.Sections.Forward;
 using MagoloRuleExtraction.Sections.RuleExtraction;
 using MagoloRuleExtraction.Sections.Validation;
+using System.Data;
 
 namespace MagoloRuleExtraction
 {
@@ -43,8 +44,7 @@ namespace MagoloRuleExtraction
 
         private void featureSelectionToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            _FeatureSelectionUC.TrainData = _DataUC.DataTable_Train;
-            _FeatureSelectionUC.DateColumn = _DataUC.DateColumnName;
+            _FeatureSelectionUC.Initialize(_DataUC.DataTable_Train, _DataUC.DateColumnName);
 
             LoadControlIntoMain(_FeatureSelectionUC);
 
@@ -52,14 +52,21 @@ namespace MagoloRuleExtraction
 
         private void ruleExtractionToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            //// Método 1: Usando Merge
+            //DataTable resultado = new DataTable();
+            //resultado.Merge(_DataUC.DataTable_Train);
+            //resultado.Merge(_DataUC.DataTable_Test);
             _RuleExtractionUC = new RuleExtractionUC();
             _RuleExtractionUC.Initialize(
-                _DataUC.DataTableResult,
+                _DataUC.DataTable_Train,
+                _DataUC.DataTable_Test,
                 _DataUC.TrainReturns,
                 _FeatureSelectionUC.PrimaryRules,
                 _DataUC.DateColumnName,
                 _FeatureSelectionUC.SideSelected,
-                _DataUC.MaskTrain
+                _DataUC.MaskTrain,
+                _DataUC.MaskTest,
+                _FeatureSelectionUC.CorrelationThreshold
                 );
 
             LoadControlIntoMain(_RuleExtractionUC);
@@ -68,19 +75,19 @@ namespace MagoloRuleExtraction
 
         private void validationToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            LoadControlIntoMain(_ValidationUC);
+            //LoadControlIntoMain(_ValidationUC);
 
         }
 
         private void forwardToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            LoadControlIntoMain(_ForwardUC);
+            //LoadControlIntoMain(_ForwardUC);
 
         }
 
         private void backtestToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            LoadControlIntoMain(_BacktestUC);
+            //LoadControlIntoMain(_BacktestUC);
 
         }
 

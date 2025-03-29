@@ -15,7 +15,7 @@ namespace MagoloRuleExtraction.Classes
         /// <returns>Tupla con la mejor métrica y su regla correspondiente</returns>
         public Tuple<double, string> DoWork(DataTable dataFrame, string feature, string target, string side)
         {
-            double sideMultiplier = side == "long" ? 1 : -1;
+            double sideMultiplier = side == "LONG" ? 1 : -1;
 
             try
             {

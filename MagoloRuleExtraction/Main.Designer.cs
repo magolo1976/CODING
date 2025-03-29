@@ -44,7 +44,7 @@
             menuStrip1.Items.AddRange(new ToolStripItem[] { dataToolStripMenuItem, featureSelectionToolStripMenuItem, ruleExtractionToolStripMenuItem, validationToolStripMenuItem, forwardToolStripMenuItem, backtestToolStripMenuItem });
             menuStrip1.Location = new Point(0, 0);
             menuStrip1.Name = "menuStrip1";
-            menuStrip1.Size = new Size(694, 24);
+            menuStrip1.Size = new Size(647, 24);
             menuStrip1.TabIndex = 0;
             menuStrip1.Text = "menuStrip1";
             // 
@@ -94,9 +94,9 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackgroundImage = Properties.Resources.bg2;
-            BackgroundImageLayout = ImageLayout.Center;
-            ClientSize = new Size(694, 637);
+            BackgroundImage = Properties.Resources.bg1;
+            BackgroundImageLayout = ImageLayout.Stretch;
+            ClientSize = new Size(647, 421);
             Controls.Add(menuStrip1);
             DoubleBuffered = true;
             FormBorderStyle = FormBorderStyle.FixedToolWindow;

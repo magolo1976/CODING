@@ -7,16 +7,15 @@ namespace MagoloRuleExtraction.Sections.FeatureSelection
     public partial class FeatureSelectionUC: UserControl
     {
         // Estado de la sesión (equivalente a st.session_state)
-        public DataTable TrainData = null;
-        public string DateColumn = string.Empty;
         public DataTable FeaturesDataTable;
         public string SideSelected { get { return cmbSide.SelectedItem.ToString(); } }
+        public double CorrelationThreshold = 75;
         public Dictionary<string, Dictionary<string, object>> PrimaryRules;
-
-        //private bool[] _maskTrain; // Máscara para filtrar datos de entrenamiento
 
         // Componentes del análisis
         private readonly Analyze_All_Features _analysisManager;
+        private DataTable TrainData = null;
+        private string DateColumn = string.Empty;
 
         public FeatureSelectionUC()
         {
@@ -25,6 +24,27 @@ namespace MagoloRuleExtraction.Sections.FeatureSelection
             cmbSide.SelectedIndex = 0;
 
             _analysisManager = new Analyze_All_Features();
+        }
+
+        /// <summary>
+        /// Establece los datos para el análisis
+        /// </summary>
+        public void Initialize(DataTable dataFrame, string dateColumn)
+        {
+            TrainData = dataFrame;
+            DateColumn = dateColumn;
+
+            // Restablecer mensaje
+            if (TrainData != null && TrainData.Rows.Count > 0)
+            {
+                this.lblMessage.Text = "Datos cargados correctamente. Listo para analizar.";
+                this.lblMessage.ForeColor = Color.Green;
+            }
+            else
+            {
+                this.lblMessage.Text = "Datos faltantes. Cargue datos previamente para analizar.";
+                this.lblMessage.ForeColor = Color.Red;
+            }
         }
 
         /// <summary>
@@ -61,10 +81,7 @@ namespace MagoloRuleExtraction.Sections.FeatureSelection
 
                 // Obtener parámetros
                 string side = SideSelected;
-                double correlationThreshold = this.trkCorrelation.Value / 100.0;
-
-                //// Filtrar datos para entrenamiento
-                //DataTable trainData = FilterTrainData();
+                CorrelationThreshold = Math.Round(this.trkCorrelation.Value / 100.0, 3);
 
                 // Iniciar análisis en un hilo separado para no bloquear la UI
                 BackgroundWorker worker = new BackgroundWorker();
@@ -76,7 +93,7 @@ namespace MagoloRuleExtraction.Sections.FeatureSelection
                         "Target",
                         DateColumn,
                         side,
-                        correlationThreshold
+                        CorrelationThreshold
                     );
 
                     args.Result = analysisResult;
@@ -106,7 +123,7 @@ namespace MagoloRuleExtraction.Sections.FeatureSelection
                     // Mostrar resultados
                     if (FeaturesDataTable.Rows.Count > 0)
                     {
-                        this.lblMessage.Text = $"Features seleccionadas ({FeaturesDataTable.Rows.Count}) después de aplicar el filtro de correlación (umbral: {correlationThreshold})";
+                        this.lblMessage.Text = $"Features seleccionadas ({FeaturesDataTable.Rows.Count}) después de aplicar el filtro de correlación (umbral: {CorrelationThreshold})";
                         this.lblMessage.ForeColor = Color.Black;
                         this.dgvResults.DataSource = FeaturesDataTable;
                     }
@@ -128,41 +145,6 @@ namespace MagoloRuleExtraction.Sections.FeatureSelection
                 this.lblMessage.Text = "Error: " + ex.Message;
                 this.lblMessage.ForeColor = Color.Red;
             }
-        }
-
-        ///// <summary>
-        ///// Filtra los datos para obtener solo los de entrenamiento según la máscara
-        ///// </summary>
-        //private DataTable FilterTrainData()
-        //{
-        //    if (_dataFrame == null || _maskTrain == null)
-        //        return null;
-
-        //    DataTable result = _dataFrame.Clone();
-
-        //    for (int i = 0; i < _maskTrain.Length; i++)
-        //    {
-        //        if (_maskTrain[i])
-        //        {
-        //            result.ImportRow(_dataFrame.Rows[i]);
-        //        }
-        //    }
-
-        //    return result;
-        //}
-
-        /// <summary>
-        /// Establece los datos para el análisis
-        /// </summary>
-        public void SetData(DataTable dataFrame, string dateColumn)//, bool[] maskTrain)
-        {
-            TrainData = dataFrame;
-            DateColumn = dateColumn;
-            //_maskTrain = maskTrain;
-
-            // Restablecer mensaje
-            this.lblMessage.Text = "Datos cargados correctamente. Listo para analizar.";
-            this.lblMessage.ForeColor = Color.Green;
         }
 
     }

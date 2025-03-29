@@ -11,9 +11,9 @@
         /// <param name="side">Dirección de la operación: 'long' o 'short'</param>
         /// <param name="nSimulations">Número de simulaciones a realizar</param>
         /// <returns>Array de métricas aleatorias</returns>
-        public double[] DoWork(List<double> returns, string side = "long", int nSimulations = 1000)
+        public double[] DoWork(List<double> returns, string side = "LONG", int nSimulations = 1000)
         {
-            double sideMultiplier = side == "long" ? 1 : -1;
+            double sideMultiplier = side == "LONG" ? 1 : -1;
             double[] randomMetrics = new double[nSimulations];
             int sampleSize = returns.Count / 3;
 

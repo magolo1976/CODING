@@ -14,6 +14,7 @@ namespace MagoloAITools.Consultas
 
             cmbModels.Items.Add("llama3.2");
             cmbModels.Items.Add("qwen2.5:32b");
+            cmbModels.Items.Add("gemma3:27b");
             cmbModels.SelectedIndex = 0;
         }
 

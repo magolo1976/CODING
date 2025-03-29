@@ -1,26 +1,29 @@
-﻿
-using OxyPlot.Axes;
-using OxyPlot.Legends;
-using OxyPlot.Series;
-using OxyPlot;
+﻿using OxyPlot;
 using System.Data;
 using MagoloRuleExtraction.Classes;
-using System.Windows.Forms;
+using OxyPlot.Series;
 
 namespace MagoloRuleExtraction.Sections.RuleExtraction
 {
     public partial class RuleExtractionUC: UserControl
     {
+        #region Properties
+
         // Datos y estado
-        private DataTable dataFrame;
-        List<double> trainReturns;
-        private Dictionary<string, RuleInfo> primaryRules;
-        private DataTable compoundRulesDataframe;
-        private double compoundThreshold;
-        private double[] randomMetrics;
-        private string dateColumn;
-        private string side;
-        private List<bool> maskTrain;
+        private List<double> TrainReturns;
+        private Dictionary<string, RuleInfo> PrimaryRules;
+        private List<bool> MaskTrain;
+        private List<bool> MaskTest;
+        private DataTable DataTrainFrame;
+        private DataTable DataTestFrame;
+        private DataTable CompoundRulesDataframe;
+        private double[] RandomMetrics;
+        private double CompoundThreshold;
+        private double CorrelationThreshold;
+        private string DateColumn;
+        private string Side;
+
+        #endregion
 
         public RuleExtractionUC()
         {
@@ -28,25 +31,26 @@ namespace MagoloRuleExtraction.Sections.RuleExtraction
         }
 
         // Método para inicializar el control con datos
-        public void Initialize(DataTable dataFrame, List<double> trainReturns, Dictionary<string, Dictionary<string, object>> primaryRules,
-                              string dateColumn, string side, List<bool> maskTrain)
+        public void Initialize(DataTable dataTrainFrame, DataTable dataTestFrame, List<double> trainReturns, Dictionary<string, Dictionary<string, object>> primaryRules,
+                              string dateColumn, string side, List<bool> maskTrain, List<bool> maskTest, double correlationThreshold)
         {
-            this.dataFrame = dataFrame;
-            this.trainReturns = trainReturns;
-            this.dateColumn = dateColumn;
-            this.side = side;
-            this.maskTrain = maskTrain;
+            DataTrainFrame = dataTrainFrame;
+            DataTestFrame = dataTestFrame;
+            TrainReturns = trainReturns;
+            DateColumn = dateColumn;
+            Side = side;
+            MaskTrain = maskTrain;
+            MaskTest = maskTest;
+            CorrelationThreshold = correlationThreshold;
 
-            this.primaryRules = GetRulesInfo(primaryRules);
+            PrimaryRules = GetRulesInfo(primaryRules);
 
             // Llenar el combo de features
             FillFeaturesCombo();
 
-            // Calcular distribución de monos si no existe
-            if (randomMetrics == null)
-            {
-                CalculateMonkeyDistribution();
-            }
+            // Calcular distribución de monos
+            CalculateMonkeyDistribution();
+
         }
 
         private Dictionary<string, RuleInfo> GetRulesInfo(Dictionary<string, Dictionary<string, object>> primaryRules)
@@ -70,10 +74,10 @@ namespace MagoloRuleExtraction.Sections.RuleExtraction
         {
             cmbFeatureBase.Items.Clear();
 
-            if (primaryRules != null && primaryRules.Count > 0)
+            if (PrimaryRules != null && PrimaryRules.Count > 0)
             {
                 // Ordenar features por score descendente
-                var sortedFeatures = primaryRules.OrderByDescending(x => x.Value.Score).ToList();
+                var sortedFeatures = PrimaryRules.OrderByDescending(x => x.Value.Score).ToList();
 
                 foreach (var feature in sortedFeatures)
                 {
@@ -84,7 +88,7 @@ namespace MagoloRuleExtraction.Sections.RuleExtraction
                     cmbFeatureBase.SelectedIndex = 0;
 
                 // Mostrar info sobre features disponibles
-                lblInfo.Text = $"Se buscarán reglas compuestas usando las {primaryRules.Count - 1} features restantes que pasaron el filtro inicial.";
+                lblInfo.Text = $"Se buscarán reglas compuestas usando las {PrimaryRules.Count - 1} features restantes que pasaron el filtro inicial.";
             }
             else
             {
@@ -101,8 +105,8 @@ namespace MagoloRuleExtraction.Sections.RuleExtraction
                 Application.DoEvents();
 
                 // Llamada a la función que calcula la distribución de monos
-                randomMetrics = new Calculate_Random_Metrics_Compound().DoWork(trainReturns, side);
-                compoundThreshold = CalculateQuantile(randomMetrics, 0.99);
+                RandomMetrics = new Calculate_Random_Metrics_Compound().DoWork(TrainReturns, Side);
+                CompoundThreshold = Math.Round(CalculateQuantile(RandomMetrics, CorrelationThreshold), 3);
 
                 // Actualizar gráfico
                 UpdateMonkeyDistributionPlot();
@@ -121,56 +125,11 @@ namespace MagoloRuleExtraction.Sections.RuleExtraction
 
         private void UpdateMonkeyDistributionPlot()
         {
-            var plotModel = new Plot_Monkey_Distribution().DoWork(
-                randomMetrics, compoundThreshold, "train"
-                );
+            var plotModel = new Plot_Monkey_Distribution().DoWork(RandomMetrics, CompoundThreshold, CorrelationThreshold, "train");
+
             // Actualizar plot
             plotMonkeyDistribution.Model = plotModel;
             plotMonkeyDistribution.InvalidatePlot(true);
-
-            //var plotModel = new PlotModel { Title = "Distribución de Métricas Aleatorias" };
-
-            //// Crear histograma
-            //var histogramSeries = new HistogramSeries
-            //{
-            //    StrokeThickness = 1,
-            //    StrokeColor = OxyColors.Black,
-            //    FillColor = OxyColor.FromRgb(135, 206, 235),
-            //    ColumnWidth = 0.02
-            //};
-
-            //// Añadir datos
-            //histogramSeries.Items.AddRange(randomMetrics.Select(x => new HistogramItem(x, 1)));
-
-            //// Añadir línea de threshold
-            //var thresholdSeries = new LineSeries
-            //{
-            //    Color = OxyColors.Red,
-            //    StrokeThickness = 2,
-            //    Title = $"Umbral (99%): {compoundThreshold:F3}"
-            //};
-            //thresholdSeries.Points.Add(new DataPoint(compoundThreshold, 0));
-            //thresholdSeries.Points.Add(new DataPoint(compoundThreshold, randomMetrics.Length * 0.1)); // Altura aproximada
-
-            //// Configurar ejes
-            //plotModel.Axes.Add(new LinearAxis
-            //{
-            //    Position = AxisPosition.Bottom,
-            //    Title = "Métrica"
-            //});
-            //plotModel.Axes.Add(new LinearAxis
-            //{
-            //    Position = AxisPosition.Left,
-            //    Title = "Frecuencia"
-            //});
-
-            //// Añadir series
-            //plotModel.Series.Add(histogramSeries);
-            //plotModel.Series.Add(thresholdSeries);
-
-            //// Actualizar plot
-            //plotMonkeyDistribution.Model = plotModel;
-            //plotMonkeyDistribution.InvalidatePlot(true);
         }
 
         private void BtnBuscarReglas_Click(object sender, EventArgs e)
@@ -178,158 +137,132 @@ namespace MagoloRuleExtraction.Sections.RuleExtraction
             if (cmbFeatureBase.SelectedIndex < 0)
                 return;
 
-            Task.Run(() =>
+            using (var loadingForm = new LoadingForm("Buscando reglas compuestas..."))
             {
-                using (var loadingForm = new LoadingForm("Buscando reglas compuestas..."))
-                {
-                    loadingForm.Show();
-                    Application.DoEvents();
+                loadingForm.Show();
+                Application.DoEvents();
 
-                    // Obtener feature base seleccionada
-                    string selectedFeatureWithScore = cmbFeatureBase.SelectedItem.ToString();
-                    string selectedFeature = selectedFeatureWithScore.Substring(0, selectedFeatureWithScore.IndexOf(" ("));
+                // Obtener feature base seleccionada
+                string selectedFeatureWithScore = cmbFeatureBase.SelectedItem.ToString();
+                string selectedFeature = selectedFeatureWithScore.Substring(0, selectedFeatureWithScore.IndexOf(" ("));
 
-                    // Obtener regla base
-                    string baseRule = primaryRules[selectedFeature].Rule;
+                // Obtener regla base
+                string baseRule = PrimaryRules[selectedFeature].Rule;
 
-                    // Preparar lista de features filtradas
-                    List<string> filteredFeatures = primaryRules.Keys.ToList();
+                // Preparar lista de features filtradas
+                List<string> filteredFeatures = PrimaryRules.Keys.ToList();
 
-                    // Buscar reglas compuestas
-                    DataTable compoundRulesDf = new Find_Second_Rule().DoWork(
-                                                                dataFrame,
-                                                                selectedFeature,
-                                                                baseRule,
-                                                                "Target",
-                                                                dateColumn,
-                                                                side,
-                                                                compoundThreshold,
-                                                                filteredFeatures
-                                                            );
+                // Buscar reglas compuestas
+                CompoundRulesDataframe = new Find_Second_Rule().DoWork(
+                                                            DataTrainFrame,
+                                                            selectedFeature,
+                                                            baseRule,
+                                                            "Target",
+                                                            DateColumn,
+                                                            Side,
+                                                            CompoundThreshold,
+                                                            filteredFeatures
+                                                        );
 
 
-                    // Guardar y mostrar reglas
-                    compoundRulesDataframe = compoundRulesDf;
-                    UpdateCompoundRulesGrid();
-                    UpdateRuleSelectionCombo();
+                // Guardar y mostrar reglas
+                UpdateCompoundRulesGrid();
+                //UpdateRuleSelectionCombo();
 
-                    loadingForm.Close();
-                }
-            });
+                loadingForm.Close();
+            }
         }
 
         private void UpdateCompoundRulesGrid()
         {
-            if (compoundRulesDataframe == null || compoundRulesDataframe.Rows.Count == 0)
+            if (CompoundRulesDataframe == null || CompoundRulesDataframe.Rows.Count == 0)
             {
                 MessageBox.Show("No se encontraron reglas compuestas que superen el umbral",
                                "Información", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            dgvCompoundRules.DataSource = compoundRulesDataframe;
+            dgvCompoundRules.SelectionChanged -= DgvCompoundRules_SelectionChanged;
+
+            dgvCompoundRules.DataSource = CompoundRulesDataframe;
+
+            // Configura el modo de ajuste automático a Fill
+            dgvCompoundRules.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+            // Asigna los pesos relativos a cada columna (20%, 70%, 10%)
+            // Los valores de FillWeight son proporcionales, no porcentajes exactos
+            dgvCompoundRules.Columns[0].FillWeight = 20;  // Columna 1: 30%
+            dgvCompoundRules.Columns[1].FillWeight = 70;  // Columna 2: 50%
+            dgvCompoundRules.Columns[2].FillWeight = 10;  // Columna 3: 20%
+
             dgvCompoundRules.Refresh();
+
+            dgvCompoundRules.SelectionChanged += DgvCompoundRules_SelectionChanged;
+
         }
 
-        private void UpdateRuleSelectionCombo()
+        private void DgvCompoundRules_SelectionChanged(object sender, EventArgs e)
         {
-            cmbSelectedRule.Items.Clear();
-
-            if (compoundRulesDataframe != null && compoundRulesDataframe.Rows.Count > 0)
+            if (dgvCompoundRules.DataSource != null && dgvCompoundRules.SelectedRows.Count > 0)
             {
-                for (int i = 0; i < compoundRulesDataframe.Rows.Count; i++)
-                {
-                    double metric = Convert.ToDouble(compoundRulesDataframe.Rows[i]["metric"]);
-                    string rule = compoundRulesDataframe.Rows[i]["rule"].ToString();
-                    cmbSelectedRule.Items.Add($"Métrica: {metric:F3} | {rule}");
-                }
+                string rule = dgvCompoundRules.SelectedRows[0].Cells[1].Value.ToString();
 
-                if (cmbSelectedRule.Items.Count > 0)
-                    cmbSelectedRule.SelectedIndex = 0;
-            }
-        }
-
-        private void CmbSelectedRule_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (cmbSelectedRule.SelectedIndex >= 0 && compoundRulesDataframe != null)
-            {
-                string rule = compoundRulesDataframe.Rows[cmbSelectedRule.SelectedIndex]["rule"].ToString();
                 PlotRuleReturns(rule);
             }
         }
 
+        //private void UpdateRuleSelectionCombo()
+        //{
+        //    cmbSelectedRule.Items.Clear();
+
+        //    if (CompoundRulesDataframe != null && CompoundRulesDataframe.Rows.Count > 0)
+        //    {
+        //        for (int i = 0; i < CompoundRulesDataframe.Rows.Count; i++)
+        //        {
+        //            double metric = Convert.ToDouble(CompoundRulesDataframe.Rows[i]["metric"]);
+        //            string rule = CompoundRulesDataframe.Rows[i]["rule"].ToString();
+        //            cmbSelectedRule.Items.Add($"Métrica: {metric:F3} | {rule}");
+        //        }
+
+        //        if (cmbSelectedRule.Items.Count > 0)
+        //            cmbSelectedRule.SelectedIndex = 0;
+        //    }
+        //}
+
+        //private void CmbSelectedRule_SelectedIndexChanged(object sender, EventArgs e)
+        //{
+        //    if (cmbSelectedRule.SelectedIndex >= 0 && CompoundRulesDataframe != null)
+        //    {
+        //        string rule = CompoundRulesDataframe.Rows[cmbSelectedRule.SelectedIndex]["rule"].ToString();
+
+        //        PlotRuleReturns(rule);
+        //    }
+        //}
+
         private void PlotRuleReturns(string rule)
         {
             // Llamar a la función para obtener los datos de la evolución de la regla
-            PlotModel plotModel = new Plot_Rule_Returns().DoWork(dataFrame, rule, dateColumn, side, maskTrain);
+            PlotModel plotModelTrain = new Plot_Rule_Returns().DoWork(DataTrainFrame, rule, DateColumn, Side, Plot_Rule_Returns.TRAIN);
+            PlotModel plotModelTest = new Plot_Rule_Returns().DoWork(DataTestFrame, rule, DateColumn, Side, Plot_Rule_Returns.TEST);
 
-            if (plotModel == null)
+            if (plotModelTrain == null || plotModelTest == null)
             {
                 MessageBox.Show("No hay suficientes datos para mostrar la evolución",
                                "Advertencia", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
+            foreach (var s in plotModelTest.Series.Cast<LineSeries>())
+            {
+                LineSeries linear = new LineSeries { Title = s.Title, Color = s.Color };
+                linear.Points.AddRange(s.Points);
+
+                plotModelTrain.Series.Add(linear);
+            }
+
             // Actualizar gráfico
-            plotRuleReturns.Model = plotModel;
+            plotRuleReturns.Model = plotModelTrain;
             plotRuleReturns.InvalidatePlot(true);
-
-
-            //// Crear nuevo modelo para el gráfico
-            //var plotModel = new PlotModel { Title = "Evolución de la Regla" };
-
-            //// Configurar ejes
-            //plotModel.Axes.Add(new DateTimeAxis
-            //{
-            //    Position = AxisPosition.Bottom,
-            //    Title = "Fecha",
-            //    StringFormat = "yyyy-MM-dd"
-            //});
-
-            //plotModel.Axes.Add(new LinearAxis
-            //{
-            //    Position = AxisPosition.Left,
-            //    Title = "Retorno Acumulado (%)"
-            //});
-
-            //// Crear series
-            //var ruleSeries = new LineSeries
-            //{
-            //    Title = "Regla",
-            //    Color = OxyColors.Green,
-            //    StrokeThickness = 2
-            //};
-
-            //var benchmarkSeries = new LineSeries
-            //{
-            //    Title = "Benchmark",
-            //    Color = OxyColors.Blue,
-            //    StrokeThickness = 1
-            //};
-
-            //// Llenar las series con datos
-            //foreach (var point in plotData)
-            //{
-            //    DateTime date = Convert.ToDateTime(point.Date);
-            //    double dateValue = DateTimeAxis.ToDouble(date);
-
-            //    ruleSeries.Points.Add(new DataPoint(dateValue, point.RuleReturn * 100));
-            //    benchmarkSeries.Points.Add(new DataPoint(dateValue, point.BenchmarkReturn * 100));
-            //}
-
-            //// Añadir series al modelo
-            //plotModel.Series.Add(ruleSeries);
-            //plotModel.Series.Add(benchmarkSeries);
-
-            //// Añadir leyenda
-            //plotModel.Legends.Add(new Legend
-            //{
-            //    LegendPosition = LegendPosition.TopRight
-            //});
-
-            //// Actualizar gráfico
-            //plotRuleReturns.Model = plotModel;
-            //plotRuleReturns.InvalidatePlot(true);
         }
     }
 

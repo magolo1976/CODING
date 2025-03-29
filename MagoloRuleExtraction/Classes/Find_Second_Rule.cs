@@ -1,6 +1,5 @@
 ﻿
 using System.Data;
-using System.Text.RegularExpressions;
 
 namespace MagoloRuleExtraction.Classes
 {
@@ -92,7 +91,7 @@ namespace MagoloRuleExtraction.Classes
 
                         if (ruleMask.Rows.Count >= 30)
                         {
-                            double sideMultiplier = side == "long" ? 1 : -1;
+                            double sideMultiplier = side == "LONG" ? 1 : -1;
 
                             // Obtener los retornos y ajustarlos según la dirección
                             List<double> returns = GetColumnAsDoubleList(ruleMask, targetColumn)
@@ -102,7 +101,7 @@ namespace MagoloRuleExtraction.Classes
                             // Calcular la métrica
                             double mean = returns.Average();
                             double std = CalculateStandardDeviation(returns);
-                            double metric = std != 0 ? mean / std : 0;
+                            double metric = std != 0 ? (mean / std) : 0;
 
                             if (metric > threshold)
                             {
@@ -131,7 +130,7 @@ namespace MagoloRuleExtraction.Classes
                 resultsTable.Columns.Add("feature", typeof(string));
                 resultsTable.Columns.Add("rule", typeof(string));
                 resultsTable.Columns.Add("metric", typeof(double));
-                resultsTable.Columns.Add("train_metric", typeof(double));
+                //resultsTable.Columns.Add("train_metric", typeof(double));
 
                 // Ordenar las reglas por train_metric en orden descendente
                 foreach (ReglaCompuesta rule in compoundRules.OrderByDescending(r => r.TrainMetric))
@@ -139,8 +138,8 @@ namespace MagoloRuleExtraction.Classes
                     DataRow row = resultsTable.NewRow();
                     row["feature"] = string.Join(", ", rule.Features);
                     row["rule"] = rule.Rule;
-                    row["metric"] = rule.Metric;
-                    row["train_metric"] = rule.TrainMetric;
+                    row["metric"] = Math.Round(rule.Metric, 3);
+                    //row["train_metric"] = rule.TrainMetric;
                     resultsTable.Rows.Add(row);
                 }
 
@@ -157,35 +156,10 @@ namespace MagoloRuleExtraction.Classes
         /// </summary>
         private DataTable FilterDataTableByExpression(DataTable source, string expression)
         {
-            // Asegurarse de que los nombres de columna estén formateados correctamente
-            string cleanExpression = expression.Replace("`", "");
-
-            // Corregir el formato de los números (reemplazar comas por puntos)
-            cleanExpression = Regex.Replace(cleanExpression,
-                @"([-]?\d+),(\d+)",
-                "$1.$2");
-
-            // Eliminar separadores de miles si existen
-            cleanExpression = Regex.Replace(cleanExpression,
-                @"(\d),(\d{3}[^\d])",
-                "$1$2");
+            string cleanExpression = Utils.CleanExpression(expression);
 
             try
             {
-                //// Verificar si los nombres de columna necesitan estar entre corchetes
-                //foreach (DataColumn column in source.Columns)
-                //{
-                //    if (column.ColumnName.Contains(" ") || !char.IsLetter(column.ColumnName[0]))
-                //    {
-                //        // Si el nombre contiene espacios o no comienza con una letra
-                //        string bracketedName = $"[{column.ColumnName}]";
-                //        // Reemplazar solo ocurrencias completas (no dentro de otras palabras)
-                //        cleanExpression = Regex.Replace(cleanExpression,
-                //            $"\\b{Regex.Escape(column.ColumnName)}\\b",
-                //            bracketedName);
-                //    }
-                //}
-
                 // Crear una vista de datos filtrada
                 DataView view = new DataView(source);
                 view.RowFilter = cleanExpression;
@@ -262,209 +236,5 @@ namespace MagoloRuleExtraction.Classes
 
             return Math.Sqrt(variance);
         }
-
-        ///// <summary>
-        ///// Resultado de una regla compuesta encontrada
-        ///// </summary>
-        //public class CompoundRule
-        //{
-        //    public List<string> Features { get; set; }
-        //    public string Rule { get; set; }
-        //    public double Metric { get; set; }
-        //    public double TrainMetric { get; set; }
-        //}
-
-        ///// <summary>
-        ///// Encuentra reglas secundarias analizando solo las variables que pasaron el filtro inicial
-        ///// </summary>
-        ///// <param name="trainData">DataTable con los datos de entrenamiento</param>
-        ///// <param name="firstFeature">Nombre de la primera característica</param>
-        ///// <param name="firstRule">Regla basada en la primera característica</param>
-        ///// <param name="targetColumn">Nombre de la columna objetivo</param>
-        ///// <param name="dateColumn">Nombre de la columna de fecha</param>
-        ///// <param name="side">Dirección del trading ('long' o 'short')</param>
-        ///// <param name="threshold">Umbral mínimo para aceptar una regla</param>
-        ///// <param name="filteredFeatures">Lista de características filtradas a analizar</param>
-        ///// <returns>DataTable con las reglas compuestas encontradas o null si no hay resultados</returns>
-        //public DataTable DoWork(
-        //    DataTable trainData,
-        //    string firstFeature,
-        //    string firstRule,
-        //    string targetColumn,
-        //    string dateColumn,
-        //    string side,
-        //    double threshold,
-        //    List<string> filteredFeatures)
-        //{
-        //    // Filtrar los datos según la primera regla
-        //    DataTable submask = FilterDataByRule(trainData, firstRule);
-
-        //    if (submask.Rows.Count < 30)
-        //    {
-        //        return null;
-        //    }
-
-        //    // Eliminar la primera característica de la lista a analizar
-        //    List<string> featuresToAnalyze = filteredFeatures
-        //        .Where(f => f != firstFeature)
-        //        .ToList();
-
-        //    List<CompoundRule> compoundRules = new List<CompoundRule>();
-        //    double sideMultiplier = side == "long" ? 1.0 : -1.0;
-
-        //    foreach (string feature in featuresToAnalyze)
-        //    {
-        //        try
-        //        {
-        //            // Extraer la columna para los cálculos de terciles
-        //            double[] values = submask.AsEnumerable()
-        //                .Select(row => Convert.ToDouble(row[feature]))
-        //                .ToArray();
-
-        //            // Calcular terciles (equivalente a pd.qcut)
-        //            double[] tercileEdges = CalculateTerciles(values);
-
-        //            for (int i = 0; i < 3; i++)
-        //            {
-        //                string secondRule;
-
-        //                if (i == 0)
-        //                {
-        //                    secondRule = $"`{feature}` < {tercileEdges[1]:0.000}";
-        //                }
-        //                else if (i == 1)
-        //                {
-        //                    secondRule = $"`{feature}` >= {tercileEdges[1]:0.000} and `{feature}` < {tercileEdges[2]:0.000}";
-        //                }
-        //                else
-        //                {
-        //                    secondRule = $"`{feature}` >= {tercileEdges[2]:0.000}";
-        //                }
-
-        //                string compoundRule = $"({firstRule}) and ({secondRule})";
-        //                DataTable ruleMask = FilterDataByRule(trainData, compoundRule);
-
-        //                if (ruleMask.Rows.Count >= 30)
-        //                {
-        //                    // Calcular retornos ajustados según el lado
-        //                    double[] returns = ruleMask.AsEnumerable()
-        //                        .Select(row => Convert.ToDouble(row[targetColumn]) * sideMultiplier)
-        //                        .ToArray();
-
-        //                    double mean = returns.Average();
-        //                    double std = CalculateStandardDeviation(returns);
-        //                    double metric = std != 0 ? mean / std : 0;
-
-        //                    if (metric > threshold)
-        //                    {
-        //                        compoundRules.Add(new CompoundRule
-        //                        {
-        //                            Features = new List<string> { firstFeature, feature },
-        //                            Rule = compoundRule,
-        //                            Metric = metric,
-        //                            TrainMetric = metric
-        //                        });
-        //                    }
-        //                }
-        //            }
-        //        }
-        //        catch (Exception)
-        //        {
-        //            // Continuar con la siguiente característica si hay error
-        //            continue;
-        //        }
-        //    }
-
-        //    if (compoundRules.Count > 0)
-        //    {
-        //        // Crear DataTable con los resultados
-        //        DataTable results = new DataTable();
-        //        results.Columns.Add("feature", typeof(string));
-        //        results.Columns.Add("rule", typeof(string));
-        //        results.Columns.Add("metric", typeof(double));
-        //        results.Columns.Add("train_metric", typeof(double));
-
-        //        foreach (var rule in compoundRules.OrderByDescending(r => r.TrainMetric))
-        //        {
-        //            DataRow row = results.NewRow();
-        //            row["feature"] = string.Join(", ", rule.Features);
-        //            row["rule"] = rule.Rule;
-        //            row["metric"] = rule.Metric;
-        //            row["train_metric"] = rule.TrainMetric;
-        //            results.Rows.Add(row);
-        //        }
-
-        //        return results;
-        //    }
-
-        //    return null;
-        //}
-
-        ///// <summary>
-        ///// Filtra datos según una regla expresada como condición
-        ///// </summary>
-        ///// <param name="data">DataTable con los datos originales</param>
-        ///// <param name="rule">Regla expresada como condición</param>
-        ///// <returns>DataTable filtrado según la regla</returns>
-        //private DataTable FilterDataByRule(DataTable data, string rule)
-        //{
-        //    // Convertir la regla a formato de expresión compatible con DataTable
-        //    string expression = ConvertRuleToExpression(rule);
-
-        //    // Filtrar usando DataView
-        //    DataView view = new DataView(data);
-        //    view.RowFilter = expression;
-
-        //    return view.ToTable();
-        //}
-
-        ///// <summary>
-        ///// Convierte una regla en formato Python a una expresión compatible con DataView.RowFilter
-        ///// </summary>
-        //private string ConvertRuleToExpression(string rule)
-        //{
-        //    // Reemplazar comillas invertidas y operadores lógicos
-        //    string expression = rule.Replace("`", "")
-        //                           .Replace(" and ", " AND ")
-        //                           .Replace(" or ", " OR ");
-
-        //    return expression;
-        //}
-
-        ///// <summary>
-        ///// Calcula los puntos de corte para terciles (similar a pd.qcut)
-        ///// </summary>
-        //private double[] CalculateTerciles(double[] values)
-        //{
-        //    if (values.Length == 0)
-        //        return new double[0];
-
-        //    // Ordenar valores
-        //    Array.Sort(values);
-
-        //    double[] terciles = new double[4];
-        //    terciles[0] = values.Min();
-        //    terciles[3] = values.Max();
-
-        //    // Calcular puntos de corte para 33% y 66%
-        //    int n = values.Length;
-        //    terciles[1] = values[(int)(n * 0.333)];
-        //    terciles[2] = values[(int)(n * 0.667)];
-
-        //    return terciles;
-        //}
-
-        ///// <summary>
-        ///// Calcula la desviación estándar de un array de valores
-        ///// </summary>
-        //private double CalculateStandardDeviation(double[] values)
-        //{
-        //    if (values.Length <= 1)
-        //        return 0;
-
-        //    double avg = values.Average();
-        //    double sum = values.Sum(x => Math.Pow(x - avg, 2));
-        //    return Math.Sqrt(sum / (values.Length - 1));
-        //}
     }
 }

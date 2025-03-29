@@ -95,28 +95,29 @@ namespace MagoloRuleExtraction.Sections.RuleExtraction
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect
             };
+            dgvCompoundRules.SelectionChanged += DgvCompoundRules_SelectionChanged;
 
-            Label lblSelectedRule = new Label
-            {
-                Text = "Selecciona una regla para ver su evolución:",
-                Location = new Point(0, 565),
-                Size = new Size(250, 20),
-                AutoSize = true
-            };
+            //Label lblSelectedRule = new Label
+            //{
+            //    Text = "Selecciona una regla para ver su evolución:",
+            //    Location = new Point(0, 565),
+            //    Size = new Size(250, 20),
+            //    AutoSize = true
+            //};
 
-            cmbSelectedRule = new ComboBox
-            {
-                Location = new Point(10, 605),
-                Size = new Size(780, 25),
-                DropDownStyle = ComboBoxStyle.DropDownList
-            };
-            cmbSelectedRule.SelectedIndexChanged += CmbSelectedRule_SelectedIndexChanged;
+            //cmbSelectedRule = new ComboBox
+            //{
+            //    Location = new Point(10, 605),
+            //    Size = new Size(780, 25),
+            //    DropDownStyle = ComboBoxStyle.DropDownList
+            //};
+            //cmbSelectedRule.SelectedIndexChanged += CmbSelectedRule_SelectedIndexChanged;
 
             plotRuleReturns = new PlotView
             {
-                Location = new Point(10, 640),
-                Size = new Size(780, 200),
-                Model = new PlotModel { Title = "Evolución de la Regla" }
+                Location = new Point(10, 570),
+                Size = new Size(780, 280),
+                Model = new PlotModel { Title = "" } //Evolución de la Regla" }
             };
 
             // Añadir controles
@@ -127,12 +128,12 @@ namespace MagoloRuleExtraction.Sections.RuleExtraction
             this.Controls.Add(lblInfo);
             this.Controls.Add(btnBuscarReglas);
             this.Controls.Add(dgvCompoundRules);
-            this.Controls.Add(lblSelectedRule);
-            this.Controls.Add(cmbSelectedRule);
+            //this.Controls.Add(lblSelectedRule);
+            //this.Controls.Add(cmbSelectedRule);
             this.Controls.Add(plotRuleReturns);
             
             Name = "RuleExtractionUC";
-            this.Size = new Size(800, 850);
+            this.Size = new Size(800, 870);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -142,7 +143,7 @@ namespace MagoloRuleExtraction.Sections.RuleExtraction
         private ComboBox cmbFeatureBase;
         private Button btnBuscarReglas;
         private DataGridView dgvCompoundRules;
-        private ComboBox cmbSelectedRule;
+        //private ComboBox cmbSelectedRule;
         private PlotView plotMonkeyDistribution;
         private PlotView plotRuleReturns;
         private Label lblInfo;
